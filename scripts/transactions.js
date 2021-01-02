@@ -5,7 +5,7 @@
  */
 
 // Import Required Modules
-var bitcoin = require('blinkhash-utxo-lib')
+var bitcoin = require('blazepool-utxo-lib')
 var util = require('./util.js');
 
 // Generate Combined Transactions (Bitcoin)
