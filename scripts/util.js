@@ -8,7 +8,7 @@
 var base58 = require('base58-native');
 var bchaddr = require('bchaddrjs');
 var bignum = require('bignum');
-var bitcoin = require('blinkhash-utxo-lib');
+var bitcoin = require('blazepool-utxo-lib');
 var crypto = require('crypto');
 
 // Hash Address from exAddress + Key
