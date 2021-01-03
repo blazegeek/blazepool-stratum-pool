@@ -1,3 +1,4 @@
+/* jshint esversion: 6 */
 /*
  *
  * Transactions (Updated)
@@ -28,9 +29,9 @@ exports.addressFromEx = function(exAddress, ripdm160Key) {
 // Convert Address to Script
 exports.addressToScript = function(network, addr) {
     if (network.network === 'bch' && bchaddr.isCashAddress(addr)) {
-        addr = bchaddr.toLegacyAddress(addr)
+        addr = bchaddr.toLegacyAddress(addr);
     }
-    if (typeof network !== 'undefined' && network != null) {
+    if (typeof network !== 'undefined' && network !== null) {
         return bitcoin.address.toOutputScript(addr, network);
     }
     else {
