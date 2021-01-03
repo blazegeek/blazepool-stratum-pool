@@ -1,3 +1,4 @@
+/* jshint esversion: 6 */
 /*
  *
  * Pool (Updated)
@@ -232,7 +233,7 @@ var Pool = function(options, authorizeFn) {
     function checkBlockAccepted(blockHash, callback) {
         _this.daemon.cmd('getblock', [blockHash], function(results) {
             var validResults = results.filter(function(result) {
-                return result.response && (result.response.hash === blockHash)
+                return result.response && (result.response.hash === blockHash);
             });
             if (validResults.length >= 1) {
                 if (validResults[0].response.confirmations >= 0) {
@@ -457,8 +458,7 @@ var Pool = function(options, authorizeFn) {
                     portWarnings.push('port ' + port + ' w/ diff ' + portDiff);
             });
             if (portWarnings.length > 0 && (!process.env.forkId || process.env.forkId === '0')) {
-                var warnMessage = 'Network diff of ' + networkDiffAdjusted + ' is lower than '
-                    + portWarnings.join(' and ');
+                var warnMessage = 'Network diff of ' + networkDiffAdjusted + ' is lower than ' + portWarnings.join(' and ');
                 emitWarningLog(warnMessage);
             }
 
@@ -548,10 +548,10 @@ var Pool = function(options, authorizeFn) {
             stratumPorts = stratumPorts.filter(function(port) {
                 return options.ports[port].enabled === true;
             });
-            options.initStats.stratumPorts = stratumPorts
+            options.initStats.stratumPorts = stratumPorts;
             _this.stratumServer.broadcastMiningJobs(_this.manager.currentJob.getJobParams(options));
             callback();
-        })
+        });
 
         // Establish Timeout Functionality
         _this.stratumServer.on('broadcastTimeout', function() {
@@ -563,7 +563,7 @@ var Pool = function(options, authorizeFn) {
                 if (error || processedBlock) return;
                 _this.manager.updateCurrentJob(rpcData);
             });
-        })
+        });
 
         // Establish New Connection Functionality
         _this.stratumServer.on('client.connected', function(client) {
@@ -576,7 +576,7 @@ var Pool = function(options, authorizeFn) {
             // Establish Client Difficulty Functionality
             client.on('difficultyChanged', function(diff) {
                 _this.emit('difficultyUpdate', client.workerName, diff);
-            })
+            });
 
             // Establish Client Subscription Functionality
             client.on('subscription', function(params, resultCallback) {
@@ -607,7 +607,7 @@ var Pool = function(options, authorizeFn) {
                         }
                         this.sendMiningJob(_this.manager.currentJob.getJobParams(options));
                 }
-            })
+            });
 
             // Establish Client Submission Functionality
             client.on('submit', function(message, resultCallback) {
@@ -647,7 +647,7 @@ var Pool = function(options, authorizeFn) {
                         );
                         resultCallback(result.error, result.result ? true : null);
                 }
-            })
+            });
 
             // Establish Client Error Messaging Functionality
             client.on('malformedMessage', function(message) {});
@@ -655,40 +655,40 @@ var Pool = function(options, authorizeFn) {
             // Establish Client Socket Error Functionality
             client.on('socketError', function(e) {
                 emitWarningLog('Socket error from ' + client.getLabel() + ': ' + JSON.stringify(e));
-            })
+            });
 
             // Establish Client Socket Timeout Functionality
             client.on('socketTimeout', function(reason) {
-                emitWarningLog('Connected timed out for ' + client.getLabel() + ': ' + reason)
-            })
+                emitWarningLog('Connected timed out for ' + client.getLabel() + ': ' + reason);
+            });
 
             // Establish Client Disconnect Functionality
-            client.on('socketDisconnect', function() {})
+            client.on('socketDisconnect', function() {});
 
             // Establish Client Banned Functionality
             client.on('kickedBannedIP', function(remainingBanTime) {
                 emitLog('Rejected incoming connection from ' + client.remoteAddress + ' banned for ' + remainingBanTime + ' more seconds');
-            })
+            });
 
             // Establish Client Forgiveness Functionality
             client.on('forgaveBannedIP', function() {
                 emitLog('Forgave banned IP ' + client.remoteAddress);
-            })
+            });
 
             // Establish Client Unknown Stratum Functionality
             client.on('unknownStratumMethod', function(fullMessage) {
                 emitLog('Unknown stratum method from ' + client.getLabel() + ': ' + fullMessage.method);
-            })
+            });
 
             // Establish Client DDOS Functionality
             client.on('socketFlooded', function() {
                 emitWarningLog('Detected socket flooding from ' + client.getLabel());
-            })
+            });
 
             // Establish Client TCP Error Functionality
             client.on('tcpProxyError', function(data) {
                 emitErrorLog('Client IP detection failed, tcpProxyProtocol is enabled yet did not receive proxy protocol message, instead got data: ' + data);
-            })
+            });
 
             // Establish Client Banning Functionality
             client.on('triggerBan', function(reason) {
