@@ -34,7 +34,7 @@ var StratumClient = function(options) {
 
     // Establish Private Stratum Variables
     var _this = this;
-    var algorithm = options.algorithm
+    var algorithm = options.algorithm;
     var banning = options.banning;
     var pendingDifficulty = null;
 
@@ -333,7 +333,7 @@ var StratumClient = function(options) {
               var powLimit = algorithms.equihash.diff;
               var adjPow = powLimit / difficulty;
               if ((64 - adjPow.toString(16).length) === 0) {
-                  zeroPad = ''
+                  zeroPad = '';
               }
               else {
                   zeroPad = '0';
@@ -370,7 +370,7 @@ var StratumClient = function(options) {
             _this.socket.destroy();
             return;
         }
-        if (pendingDifficulty != null) {
+        if (pendingDifficulty !== null) {
             var result = _this.sendDifficulty(pendingDifficulty);
             pendingDifficulty = null;
             if (result) {
@@ -444,7 +444,7 @@ var StratumServer = function(options, authorizeFn) {
         // Interval to Clear Old Bans from BannedIPs
         if (options.banning && options.banning.enabled) {
             setInterval(function() {
-                for (ip in bannedIPs) {
+                for (var ip in bannedIPs) {
                     var banTime = bannedIPs[ip];
                     if (Date.now() - banTime > options.banning.time)
                         delete bannedIPs[ip];
@@ -528,7 +528,7 @@ var StratumServer = function(options, authorizeFn) {
     // Manually Add Stratum Client to Stratum Server
     this.manuallyAddStratumClient = function(clientObj) {
         var subId = _this.handleNewClient(clientObj.socket);
-        if (subId != null) { // not banned!
+        if (subId !== null) { // not banned!
             stratumClients[subId].manuallyAuthClient(clientObj.workerName, clientObj.workerPass);
             stratumClients[subId].manuallySetValues(clientObj);
         }
