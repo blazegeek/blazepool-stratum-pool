@@ -49,5 +49,5 @@
   "readmeFilename": "README.md",
   "_id": "blazepool-stratum-pool@1.0.0",
   "_resolved": "git://github.com/blazegeek/blazepool-stratum-pool.git",
-  "_from": "stratum-pool@git://github.com/blazegeek/blazepool-stratum-pool.git"
+  "_from": "blazepool-stratum-pool@git://github.com/blazegeek/blazepool-stratum-pool.git"
 }
