@@ -20,7 +20,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return util.sha256d.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -32,7 +32,7 @@ var algorithms = {
             var rValue = coinConfig.rValue || 1;
             return function(data){
                 return multiHashing.scrypt(data,nValue,rValue);
-            }
+            };
         }
     },
 
@@ -44,7 +44,7 @@ var algorithms = {
             var rValue = coinConfig.rValue || 1;
             return function(data){
                 return multiHashing.scrypt(data,nValue,rValue);
-            }
+            };
         }
     },
 
@@ -57,7 +57,7 @@ var algorithms = {
             var nMax = coinConfig.nMax || 30;
             return function(data, nTime){
                 return multiHashing.scryptjane(data, nTime, nTimestamp, nMin, nMax);
-            }
+            };
         }
     },
 
@@ -78,7 +78,7 @@ var algorithms = {
             })();
             return function(data) {
                 return multiHashing.scryptn(data, nFactor);
-            }
+            };
         }
     },
     
@@ -87,7 +87,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.geek.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -96,7 +96,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.sha1.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -105,7 +105,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.c11.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -114,7 +114,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.x11.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -123,7 +123,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.x13.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -132,7 +132,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.x15.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -142,7 +142,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.x16r.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -152,7 +152,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.x16rv2.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -161,7 +161,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.nist5.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -170,7 +170,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.quark.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -186,7 +186,7 @@ var algorithms = {
             else {
                 return function() {
                     return multiHashing.keccak.apply(this, arguments);
-                }
+                };
             }
         }
     },
@@ -197,7 +197,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.blake.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -207,7 +207,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.neoscrypt.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -216,7 +216,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.skein.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -226,7 +226,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.groestl.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -236,7 +236,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.fugue.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -245,7 +245,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.shavite3.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -254,7 +254,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.hefty1.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -263,7 +263,7 @@ var algorithms = {
         hash: function(){
             return function(){
                 return multiHashing.qubit.apply(this, arguments);
-            }
+            };
         }
     },
 
@@ -272,13 +272,13 @@ var algorithms = {
         multiplier: 1,
         diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
         hash: function(coinConfig) {
-            var parameters = coinConfig.parameters
+            var parameters = coinConfig.parameters;
             if (!parameters) {
                 parameters = {
                     N: 200,
                     K: 9,
                     personalization: 'ZcashPoW'
-                }
+                };
             }
             var N = parameters.N || 200;
             var K = parameters.K || 9;
@@ -293,8 +293,8 @@ var algorithms = {
                         N,
                         K
                     ]
-                )
-            }
+                );
+            };
         }
     }
 };
