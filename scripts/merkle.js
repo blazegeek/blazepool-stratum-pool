@@ -10,7 +10,7 @@ var crypto = require('crypto');
 var util = require('./util.js');
 
 // Import Promise Module
-var Promise = require('promise');
+var promise = require('promise');
 
 // Merkle Main Function
 var Merkle = function(data) {
@@ -70,7 +70,7 @@ var Merkle = function(data) {
     function recursiveMerkle(hashes, callback) {
 
         // Establish Merkle Variables
-        var concatHashes = []
+        var concatHashes = [];
         var merkleTree = {};
 
         // Duplicate Last Element if Array.length is Odd */
@@ -131,7 +131,7 @@ var Merkle = function(data) {
 
     // Calculate Merkle Root
     function calculateRoot(hashes) {
-        var result = Promise.denodeify(generateMerkle)(hashes);
+        var result = promise.denodeify(generateMerkle)(hashes);
         return Object.values(result)[2].root;
     }
 
@@ -155,7 +155,7 @@ var Merkle = function(data) {
     // Hash Merkle Steps With Input
     function withFirst(hash) {
         this.steps.forEach(function (step) {
-            hash = util.sha256d(Buffer.concat([hash, step]))
+            hash = util.sha256d(Buffer.concat([hash, step]));
         });
         return hash;
     }
@@ -165,7 +165,7 @@ var Merkle = function(data) {
     this.getRoot = getRoot;
     this.steps = calculateSteps(data);
     this.withFirst = withFirst;
-}
+};
 
 // Export Merkle
 module.exports = Merkle;
