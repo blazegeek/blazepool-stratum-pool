@@ -5,7 +5,7 @@
  */
 
 // Import Required Modules
-var bitcoin = require('blazepool-utxo-lib')
+var bitcoin = require('blazepool-utxo-lib');
 var util = require('./util.js');
 
 // Generate Combined Transactions (Bitcoin)
@@ -17,7 +17,7 @@ var Transactions = function() {
         if (address.length === 40) {
             outputScript = util.miningKeyToScript(address);
         }
-        return outputScript
+        return outputScript;
     }
 
     // Structure ZCash Protocol Transaction
@@ -26,13 +26,13 @@ var Transactions = function() {
         // Establish Transactions Variables [1]
         var feePercent = 0;
         var network = options.coin.network;
-        var txBuilder = new bitcoin.TransactionBuilder(network)
+        var txBuilder = new bitcoin.TransactionBuilder(network);
 
         // Establish Transactions Variables [2]
         var reward = rpcData[options.coin.rewardType];
         var rewardToPool = reward;
-        var poolIdentifier = options.identifier || "https://github.com/blinkhash/blinkhash-server"
-        var poolAddressScript = util.addressToScript(options.network, options.poolAddress)
+        var poolIdentifier = options.identifier || "blazepool.blazegeek.com";
+        var poolAddressScript = util.addressToScript(options.network, options.poolAddress);
 
         // Set Transaction Version
         if (options.coin.sapling === true || (typeof options.coin.sapling === 'number' && options.coin.sapling <= rpcData.height)) {
@@ -42,20 +42,20 @@ var Transactions = function() {
         }
 
         // Serialize Block Height [1]
-        var blockHeightSerial = (rpcData.height.toString(16).length % 2 === 0 ? '' : '0') + rpcData.height.toString(16)
-        let height = Math.ceil((rpcData.height << 1).toString(2).length / 8)
-        let lengthDiff = blockHeightSerial.length / 2 - height
+        var blockHeightSerial = (rpcData.height.toString(16).length % 2 === 0 ? '' : '0') + rpcData.height.toString(16);
+        let height = Math.ceil((rpcData.height << 1).toString(2).length / 8);
+        let lengthDiff = blockHeightSerial.length / 2 - height;
         for (let i = 0; i < lengthDiff; i++) {
-            blockHeightSerial = `${blockHeightSerial}00`
+            blockHeightSerial = `${blockHeightSerial}00`;
         }
 
         // Serialize Block Height [2]
-        let length = `0${height}`
+        let length = `0${height}`;
         let serializedBlockHeight = new Buffer.concat([
             new Buffer(length, 'hex'),
             util.reverseBuffer(new Buffer(blockHeightSerial, 'hex')),
             new Buffer('00', 'hex')
-        ])
+        ]);
 
         // Add Serialized Block Height to Transaction
         txBuilder.addInput(new Buffer('0000000000000000000000000000000000000000000000000000000000000000', 'hex'),
@@ -65,7 +65,7 @@ var Transactions = function() {
                 serializedBlockHeight,
                 Buffer.from(Buffer.from(poolIdentifier, "utf8").toString("hex"), "hex")
             ])
-        )
+        );
 
         // Calculate Recipient Fees
         for (var i = 0; i < options.recipients.length; i++) {
@@ -79,10 +79,10 @@ var Transactions = function() {
             case "equihash-rewards1":
 
                 // Calculate Indices/Rewards
-                var treasuryIndex = parseInt(Math.floor(((rpcData.height - options.rewards.treasury.startHeight) / options.rewards.treasury.interval) % options.rewards.treasury.recipients.length))
-                var secureNodesIndex = parseInt(Math.floor(((rpcData.height - options.rewards.secureNodes.startHeight) / options.rewards.secureNodes.interval) % options.rewards.secureNodes.recipients.length))
-                var superNodesIndex = parseInt(Math.floor(((rpcData.height - options.rewards.superNodes.startHeight) / options.rewards.superNodes.interval) % options.rewards.superNodes.recipients.length))
-                var secondaryReward = (options.rewards.treasury.reward + options.rewards.secureNodes.reward + options.rewards.superNodes.reward) / 100
+                var treasuryIndex = parseInt(Math.floor(((rpcData.height - options.rewards.treasury.startHeight) / options.rewards.treasury.interval) % options.rewards.treasury.recipients.length));
+                var secureNodesIndex = parseInt(Math.floor(((rpcData.height - options.rewards.secureNodes.startHeight) / options.rewards.secureNodes.interval) % options.rewards.secureNodes.recipients.length));
+                var superNodesIndex = parseInt(Math.floor(((rpcData.height - options.rewards.superNodes.startHeight) / options.rewards.superNodes.interval) % options.rewards.superNodes.recipients.length));
+                var secondaryReward = (options.rewards.treasury.reward + options.rewards.secureNodes.reward + options.rewards.superNodes.reward) / 100;
                 var poolReward = Math.floor(reward * (1 - (secondaryReward + feePercent)));
 
                 // Generate Address Scripts
@@ -107,8 +107,8 @@ var Transactions = function() {
             case "equihash-rewards2":
 
                 // Calculate Indices/Rewards
-                var treasuryIndex = parseInt(Math.floor(((rpcData.height - options.rewards.treasury.startHeight) / options.rewards.treasury.interval) % options.rewards.treasury.recipients.length))
-                var secondaryReward = (options.rewards.treasury.reward) / 100
+                var treasuryIndex = parseInt(Math.floor(((rpcData.height - options.rewards.treasury.startHeight) / options.rewards.treasury.interval) % options.rewards.treasury.recipients.length));
+                var secondaryReward = (options.rewards.treasury.reward) / 100;
                 var poolReward = Math.floor(reward * (1 - (secondaryReward + feePercent)));
 
                 // Generate Address Scripts
@@ -125,8 +125,8 @@ var Transactions = function() {
             case "equihash-rewards3":
 
                 // Calculate Indices/Rewards
-                var foundersIndex = parseInt(Math.floor(((rpcData.height - options.rewards.founders.startHeight) / options.rewards.founders.interval) % options.rewards.founders.recipients.length))
-                var secondaryReward = (options.rewards.founders.reward) / 100
+                var foundersIndex = parseInt(Math.floor(((rpcData.height - options.rewards.founders.startHeight) / options.rewards.founders.interval) % options.rewards.founders.recipients.length));
+                var secondaryReward = (options.rewards.founders.reward) / 100;
                 var poolReward = Math.floor(reward * (1 - (secondaryReward + feePercent)));
 
                 // Generate Address Scripts
@@ -153,13 +153,13 @@ var Transactions = function() {
         }
 
         // Finalize Transaction
-        var generation = txBuilder.build()
+        var generation = txBuilder.build();
         var txHex = generation.toHex();
         var txHash = generation.getHash().toString('hex');
 
         // Return Generated Transaction
-        return [txHex, txHash]
-    }
+        return [txHex, txHash];
+    };
 
     // Structure Bitcoin Protocol Transaction
     this.bitcoin = function(rpcData, extraNoncePlaceholder, options) {
@@ -190,8 +190,8 @@ var Transactions = function() {
         // Establish Transactions Variables [2]
         var reward = rpcData[options.coin.rewardType];
         var rewardToPool = reward;
-        var poolIdentifier = options.identifier || "https://github.com/blinkhash/blinkhash-server"
-        var poolAddressScript = util.addressToScript(options.network, options.poolAddress)
+        var poolIdentifier = options.identifier || "blazepool.blazegeek.com";
+        var poolAddressScript = util.addressToScript(options.network, options.poolAddress);
         var coinbaseAux = rpcData.coinbaseaux.flags ? Buffer.from(rpcData.coinbaseaux.flags, 'hex') : Buffer.from([]);
 
         // Handle Comments if Necessary
@@ -238,7 +238,7 @@ var Transactions = function() {
                     var payeeReward = rpcData.masternode[i].amount;
                     var payeeScript;
                     if (rpcData.masternode[i].script) {
-                        payeeScript = Buffer.from(rpcData.masternode[i].script, 'hex')
+                        payeeScript = Buffer.from(rpcData.masternode[i].script, 'hex');
                     }
                     else {
                         compileScript(rpcData.masternode[i].payee, options.network);
@@ -260,7 +260,7 @@ var Transactions = function() {
                 var payeeReward = rpcData.superblock[i].amount;
                 var payeeScript;
                 if (rpcData.superblock[i].script) {
-                    payeeScript = Buffer.from(rpcData.superblock[i].script, 'hex')
+                    payeeScript = Buffer.from(rpcData.superblock[i].script, 'hex');
                 }
                 else {
                     compileScript(rpcData.superblock[i].payee, options.network);
@@ -352,7 +352,7 @@ var Transactions = function() {
 
         // Return Generated Transaction
         return [[p1, p2], null];
-    }
+    };
 };
 
 // Export Transactions
