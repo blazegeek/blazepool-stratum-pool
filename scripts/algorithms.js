@@ -6,7 +6,7 @@
 
 // Import Required Modules
 var ev = require('equihash');
-var multiHashing = require('multi-hashing');
+var multiHashing = require('blazepool-multi-hashing');
 var util = require('./util.js');
 
 // Global Difficulty
@@ -78,6 +78,15 @@ var algorithms = {
             })();
             return function(data) {
                 return multiHashing.scryptn(data, nFactor);
+            }
+        }
+    },
+    
+    // Geek Algorithm
+    'geek': {
+        hash: function(){
+            return function(){
+                return multiHashing.geek.apply(this, arguments);
             }
         }
     },
