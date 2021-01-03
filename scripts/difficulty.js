@@ -38,7 +38,7 @@ function RingBuffer(maxSize) {
 
     // Average Ring Buffer
     this.avg = function() {
-        var sum = data.reduce(function(a, b) { return a + b });
+        var sum = data.reduce(function(a, b) { return a + b; });
         return sum / (isFull ? maxSize : cursor);
     };
 
