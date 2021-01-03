@@ -56,7 +56,7 @@ const equihashParameters = {
         solutionLength: 2694,
         solutionSlice: 6,
     }
-}
+};
 
 // Check if Input is Hex String
 function isHexString(s) {
@@ -147,7 +147,7 @@ var Manager = function(options) {
     }
 
     // Check if New Block is Processed
-    this.updateCurrentJob = updateCurrentJob
+    this.updateCurrentJob = updateCurrentJob;
     this.processTemplate = function(rpcData) {
 
         // If Current Job !== Previous Job
@@ -165,7 +165,7 @@ var Manager = function(options) {
         }
 
         // Update Current Managed Block
-        updateCurrentJob(rpcData)
+        updateCurrentJob(rpcData);
         return true;
     };
 
@@ -194,8 +194,8 @@ var Manager = function(options) {
                 // Calculate Coin Parameters
                 var N = options.coin.parameters.N || 200;
                 var K = options.coin.parameters.K || 9;
-                var expectedLength = equihashParameters[`${N}_${K}`].solutionLength
-                var solutionSlice = equihashParameters[`${N}_${K}`].solutionSlice
+                var expectedLength = equihashParameters[`${N}_${K}`].solutionLength;
+                var solutionSlice = equihashParameters[`${N}_${K}`].solutionSlice;
 
                 // Edge Cases to Check if Share is Invalid
                 var submitTime = Date.now() / 1000 | 0;
@@ -286,7 +286,7 @@ var Manager = function(options) {
 
                 // Edge Cases to Check if Share is Invalid
                 var submitTime = Date.now() / 1000 | 0;
-                if (extraNonce2.length / 2 !== _this.extraNonce2Size)
+                if (extraNonce2.length / 2 !== _this.extraNonce2Size);
                     return shareError([20, 'incorrect size of extranonce2']);
                 var job = this.validJobs[jobId];
                 if (typeof job === 'undefined' || job.jobId != jobId ) {
