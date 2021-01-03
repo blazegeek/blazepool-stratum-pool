@@ -5,7 +5,7 @@
  */
 
 // Import Required Modules
-var ev = require('equihash');
+var ev = require('blazepool-equihash');
 var multiHashing = require('blazepool-multi-hashing');
 var util = require('./util.js');
 
