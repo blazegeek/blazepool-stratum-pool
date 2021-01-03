@@ -44,7 +44,7 @@ var DaemonInterface = function(daemons, logger) {
     // Index Daemons from Parameter
     function indexDaemons() {
         for (var i = 0; i < daemons.length; i++) {
-            daemons[i]['index'] = i;
+            daemons[i].index = i;
         }
         return daemons;
     }
@@ -91,9 +91,7 @@ var DaemonInterface = function(daemons, logger) {
                     parseJson(res, data);
                     return;
                 }
-                logger('error', 'Could not parse RPC data from daemon instance  ' + instance.index
-                    + '\nRequest Data: ' + jsonData
-                    + '\nReponse Data: ' + data);
+                logger('error', 'Could not parse RPC data from daemon instance  ' + instance.index + '\nRequest Data: ' + jsonData + '\nReponse Data: ' + data);
 
             }
             if (dataJson) {
@@ -177,7 +175,7 @@ var DaemonInterface = function(daemons, logger) {
     this.isOnline = isOnline;
     this.cmd = cmd;
     this.batchCmd = batchCmd;
-}
+};
 
 exports.interface = DaemonInterface;
 DaemonInterface.prototype.__proto__ = events.EventEmitter.prototype;
