@@ -5,9 +5,9 @@
  */
 
 // Import Required Modules
-var ev = require('blazepool-equihash');
-var multiHashing = require('blazepool-multi-hashing');
-var util = require('./util.js');
+var ev = require("blazepool-equihash");
+var multiHashing = require("blazepool-multi-hashing");
+var util = require("./util.js");
 
 // Global Difficulty
 var diff1 = global.diff1 = 0x00000000ffff0000000000000000000000000000000000000000000000000000;
@@ -16,7 +16,7 @@ var diff1 = global.diff1 = 0x00000000ffff000000000000000000000000000000000000000
 var algorithms = {
 
     // Sha256 Algorithm
-    'sha256': {
+    "sha256": {
         hash: function(){
             return function(){
                 return util.sha256d.apply(this, arguments);
@@ -25,7 +25,7 @@ var algorithms = {
     },
 
     // Scrypt Algorithm
-    'scrypt': {
+    "scrypt": {
         multiplier: Math.pow(2, 16),
         hash: function(coinConfig){
             var nValue = coinConfig.nValue || 1024;
@@ -37,7 +37,7 @@ var algorithms = {
     },
 
     // Scrypt-OG Algorithm
-    'scrypt-og': {
+    "scrypt-og": {
         multiplier: Math.pow(2, 16),
         hash: function(coinConfig){
             var nValue = coinConfig.nValue || 64;
@@ -49,7 +49,7 @@ var algorithms = {
     },
 
     // Scrypt-Jane Algorithm
-    'scrypt-jane': {
+    "scrypt-jane": {
         multiplier: Math.pow(2, 16),
         hash: function(coinConfig){
             var nTimestamp = coinConfig.chainStartTime || 1367991200;
@@ -62,7 +62,7 @@ var algorithms = {
     },
 
     // Scrypt-N Algorithm
-    'scrypt-n': {
+    "scrypt-n": {
         multiplier: Math.pow(2, 16),
         hash: function(coinConfig){
             var timeTable = coinConfig.timeTable || {
@@ -83,7 +83,7 @@ var algorithms = {
     },
     
     // Geek Algorithm
-    'geek': {
+    "geek": {
         hash: function(){
             return function(){
                 return multiHashing.geek.apply(this, arguments);
@@ -92,7 +92,7 @@ var algorithms = {
     },
 
     // Sha-1 Algorithm
-    'sha1': {
+    "sha1": {
         hash: function(){
             return function(){
                 return multiHashing.sha1.apply(this, arguments);
@@ -101,7 +101,7 @@ var algorithms = {
     },
 
     // C11 Algorithm
-    'c11': {
+    "c11": {
         hash: function(){
             return function(){
                 return multiHashing.c11.apply(this, arguments);
@@ -110,7 +110,7 @@ var algorithms = {
     },
 
     // X11 Algorithm
-    'x11': {
+    "x11": {
         hash: function(){
             return function(){
                 return multiHashing.x11.apply(this, arguments);
@@ -119,7 +119,7 @@ var algorithms = {
     },
 
     // X13 Algorithm
-    'x13': {
+    "x13": {
         hash: function(){
             return function(){
                 return multiHashing.x13.apply(this, arguments);
@@ -128,7 +128,7 @@ var algorithms = {
     },
 
     // X15 Algorithm
-    'x15': {
+    "x15": {
         hash: function(){
             return function(){
                 return multiHashing.x15.apply(this, arguments);
@@ -137,7 +137,7 @@ var algorithms = {
     },
 
     // X16R Algorithm
-    'x16r': {
+    "x16r": {
         multiplier: Math.pow(2, 8),
         hash: function(){
             return function(){
@@ -147,7 +147,7 @@ var algorithms = {
     },
 
     // X16Rv2 Algorithm
-    'x16rv2': {
+    "x16rv2": {
         multiplier: Math.pow(2, 8),
         hash: function(){
             return function(){
@@ -157,7 +157,7 @@ var algorithms = {
     },
 
     // Nist5 Algorithm
-    'nist5': {
+    "nist5": {
         hash: function(){
             return function(){
                 return multiHashing.nist5.apply(this, arguments);
@@ -166,7 +166,7 @@ var algorithms = {
     },
 
     // Quark Algorithm
-    'quark': {
+    "quark": {
         hash: function(){
             return function(){
                 return multiHashing.quark.apply(this, arguments);
@@ -175,12 +175,12 @@ var algorithms = {
     },
 
     // Keccak Algorithm
-    'keccak': {
+    "keccak": {
         multiplier: Math.pow(2, 8),
         hash: function(coinConfig){
             if (coinConfig.normalHashing === true) {
                 return function(data, nTimeInt) {
-                    return multiHashing.keccak(multiHashing.keccak(Buffer.concat([data, Buffer.from(nTimeInt.toString(16), 'hex')])));
+                    return multiHashing.keccak(multiHashing.keccak(Buffer.concat([data, Buffer.from(nTimeInt.toString(16), "hex")])));
                 };
             }
             else {
@@ -192,7 +192,7 @@ var algorithms = {
     },
 
     // Blake Algorithm
-    'blake': {
+    "blake": {
         multiplier: Math.pow(2, 8),
         hash: function(){
             return function(){
@@ -202,7 +202,7 @@ var algorithms = {
     },
 
     // Neoscrypt Algorithm
-    'neoscrypt': {
+    "neoscrypt": {
         multiplier: Math.pow(2, 5),
         hash: function(){
             return function(){
@@ -212,7 +212,7 @@ var algorithms = {
     },
 
     // Skein Algorithm
-    'skein': {
+    "skein": {
         hash: function(){
             return function(){
                 return multiHashing.skein.apply(this, arguments);
@@ -221,7 +221,7 @@ var algorithms = {
     },
 
     // Groestl Algorithm
-    'groestl': {
+    "groestl": {
         multiplier: Math.pow(2, 8),
         hash: function(){
             return function(){
@@ -231,7 +231,7 @@ var algorithms = {
     },
 
     // Fugue Algorithm
-    'fugue': {
+    "fugue": {
         multiplier: Math.pow(2, 8),
         hash: function(){
             return function(){
@@ -241,7 +241,7 @@ var algorithms = {
     },
 
     // Shavite-3 Algorithm
-    'shavite3': {
+    "shavite3": {
         hash: function(){
             return function(){
                 return multiHashing.shavite3.apply(this, arguments);
@@ -250,7 +250,7 @@ var algorithms = {
     },
 
     // Hefty-1 Algorithm
-    'hefty1': {
+    "hefty1": {
         hash: function(){
             return function(){
                 return multiHashing.hefty1.apply(this, arguments);
@@ -259,7 +259,7 @@ var algorithms = {
     },
 
     // Qubit Algorithm
-    'qubit': {
+    "qubit": {
         hash: function(){
             return function(){
                 return multiHashing.qubit.apply(this, arguments);
@@ -268,21 +268,21 @@ var algorithms = {
     },
 
     // Equihash Algorithm
-    'equihash': {
+    "equihash": {
         multiplier: 1,
-        diff: parseInt('0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff'),
+        diff: parseInt("0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"),
         hash: function(coinConfig) {
             var parameters = coinConfig.parameters;
             if (!parameters) {
                 parameters = {
                     N: 200,
                     K: 9,
-                    personalization: 'ZcashPoW'
+                    personalization: "ZcashPoW"
                 };
             }
             var N = parameters.N || 200;
             var K = parameters.K || 9;
-            var personalization = parameters.personalization || 'ZcashPoW';
+            var personalization = parameters.personalization || "ZcashPoW";
             return function() {
                 return ev.verify.apply(
                     this,
