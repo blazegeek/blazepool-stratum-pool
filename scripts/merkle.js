@@ -5,12 +5,12 @@
  */
 
 // Import Required Modules
-var async = require('async');
-var crypto = require('crypto');
-var util = require('./util.js');
+var async = require("async");
+var crypto = require("crypto");
+var util = require("./util.js");
 
 // Import Promise Module
-var promise = require('promise');
+var promise = require("promise");
 
 // Merkle Main Function
 var Merkle = function(data) {
@@ -24,16 +24,16 @@ var Merkle = function(data) {
 
     // Hash the Input Data Twice
     function doubleHash(data, algorithm) {
-        algorithm = algorithm || 'sha256';
-        var hash1 = crypto.createHash(algorithm).update(Buffer.from(data, 'hex')).digest();
-        var hash2 = crypto.createHash(algorithm).update(hash1).digest('hex');
+        algorithm = algorithm || "sha256";
+        var hash1 = crypto.createHash(algorithm).update(Buffer.from(data, "hex")).digest();
+        var hash2 = crypto.createHash(algorithm).update(hash1).digest("hex");
         return hash2;
     }
 
     // Reverse Array of Hashes
     function reverseHash(hashes, callback) {
         var reversedHashes = async.map(hashes, function (element, callback) {
-            callback(null, element.match(/.{2}/g).reverse().join(''));
+            callback(null, element.match(/.{2}/g).reverse().join(""));
         }, callback);
     }
 
@@ -94,7 +94,7 @@ var Merkle = function(data) {
             if (newHashes.length > 1) {
                 recursiveMerkle(newHashes, callback);
             } else {
-                merkleTree.root = newHashes[0] || '  ';
+                merkleTree.root = newHashes[0] || "  ";
                 callback(null, merkleTree);
             }
         });
@@ -104,7 +104,7 @@ var Merkle = function(data) {
     function generateMerkle(array, options, callback) {
 
         // Check if Options Exists
-        if (typeof options === 'function') {
+        if (typeof options === "function") {
             callback = options;
             options = {};
         }
@@ -122,7 +122,7 @@ var Merkle = function(data) {
                     if (err) {
                         return callback(err);
                     }
-                    merkle.root = merkle.root.match(/.{2}/g).reverse().join('');
+                    merkle.root = merkle.root.match(/.{2}/g).reverse().join("");
                     callback(null, merkle);
                 });
             });
@@ -137,7 +137,7 @@ var Merkle = function(data) {
 
     // Get Merkle Root
     function getRoot(rpcData, generateTxRaw) {
-        hashes = [util.reverseBuffer(Buffer.from(generateTxRaw, 'hex')).toString('hex')];
+        hashes = [util.reverseBuffer(Buffer.from(generateTxRaw, "hex")).toString("hex")];
         rpcData.transactions.forEach(function (value) {
             if (value.txid !== undefined) {
                 hashes.push(value.txid);
