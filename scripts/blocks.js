@@ -5,12 +5,12 @@
  */
 
 // Import Required Modules
-var bignum = require('bignum');
-var util = require('./util.js');
+var bignum = require("bignum");
+var util = require("./util.js");
 
 // Import Required Modules
-var Merkle = require('./merkle.js');
-var Transactions = require('./transactions.js');
+var Merkle = require("./merkle.js");
+var Transactions = require("./transactions.js");
 
 // BlockTemplate Main Function
 var BlockTemplate = function(jobId, rpcData, extraNoncePlaceholder, options) {
@@ -29,7 +29,7 @@ var BlockTemplate = function(jobId, rpcData, extraNoncePlaceholder, options) {
     // Function to get Merkle Hashes
     function getMerkleHashes(steps) {
         return steps.map(function(step) {
-            return step.toString('hex');
+            return step.toString("hex");
         });
     }
 
@@ -52,7 +52,7 @@ var BlockTemplate = function(jobId, rpcData, extraNoncePlaceholder, options) {
         return Buffer.concat(
             [util.varIntBuffer(rpcData.votes.length)].concat(
                 rpcData.votes.map(function (vt) {
-                    return Buffer.from(vt, 'hex');
+                    return Buffer.from(vt, "hex");
                 })
             )
         );
@@ -64,7 +64,7 @@ var BlockTemplate = function(jobId, rpcData, extraNoncePlaceholder, options) {
         switch (options.coin.algorithm) {
 
             // Equihash Genesis Transaction
-            case 'equihash':
+            case "equihash":
                 return transactions.zcash(rpcData, options);
 
             // Default Genesis Transaction
@@ -78,7 +78,7 @@ var BlockTemplate = function(jobId, rpcData, extraNoncePlaceholder, options) {
         switch (options.coin.algorithm) {
 
             // Equihash Merkle Creation
-            case 'equihash':
+            case "equihash":
                 return new Merkle(null).getRoot(rpcData, genTransaction[1]);
 
             // Default Merkle Creation
@@ -93,15 +93,15 @@ var BlockTemplate = function(jobId, rpcData, extraNoncePlaceholder, options) {
 
     // Structure Block Transaction Data
     this.transactions = Buffer.concat(rpcData.transactions.map(function(tx) {
-        return Buffer.from(tx.data, 'hex');
+        return Buffer.from(tx.data, "hex");
     }));
 
     // Structure Block Historical Hashes
-    this.prevHashReversed = util.reverseByteOrder(Buffer.from(rpcData.previousblockhash, 'hex')).toString('hex');
+    this.prevHashReversed = util.reverseByteOrder(Buffer.from(rpcData.previousblockhash, "hex")).toString("hex");
     if (rpcData.finalsaplingroothash) {
-        this.hashReserved = util.reverseBuffer(new Buffer(rpcData.finalsaplingroothash, 'hex')).toString('hex');
+        this.hashReserved = util.reverseBuffer(new Buffer(rpcData.finalsaplingroothash, "hex")).toString("hex");
     } else {
-        this.hashReserved = '0000000000000000000000000000000000000000000000000000000000000000';
+        this.hashReserved = "0000000000000000000000000000000000000000000000000000000000000000";
     }
 
     // Push Submissions to Array
@@ -137,25 +137,25 @@ var BlockTemplate = function(jobId, rpcData, extraNoncePlaceholder, options) {
             case "equihash":
                 var header = Buffer.alloc(140);
                 var position = 0;
-                var merkleRootReversed = util.reverseBuffer(Buffer.from(merkleRoot, 'hex')).toString('hex');
-                var bitsReversed = util.reverseBuffer(Buffer.from(this.rpcData.bits, 'hex')).toString('hex');
-                header.writeUInt32LE(this.rpcData.version, position += 0, 4, 'hex');
-                header.write(this.prevHashReversed, position += 4, 32, 'hex');
-                header.write(merkleRootReversed, position += 32, 32, 'hex');
-                header.write(nTime, position += 32, 4, 'hex');
-                header.write(bitsReversed, position += 4, 4, 'hex');
-                header.write(nonce, position += 4, 32, 'hex');
+                var merkleRootReversed = util.reverseBuffer(Buffer.from(merkleRoot, "hex")).toString("hex");
+                var bitsReversed = util.reverseBuffer(Buffer.from(this.rpcData.bits, "hex")).toString("hex");
+                header.writeUInt32LE(this.rpcData.version, position += 0, 4, "hex");
+                header.write(this.prevHashReversed, position += 4, 32, "hex");
+                header.write(merkleRootReversed, position += 32, 32, "hex");
+                header.write(nTime, position += 32, 4, "hex");
+                header.write(bitsReversed, position += 4, 4, "hex");
+                header.write(nonce, position += 4, 32, "hex");
                 return header;
 
             // Default Header Serialization
             default:
                 var header =  Buffer.alloc(80);
                 var position = 0;
-                header.write(nonce, position, 4, 'hex');
-                header.write(this.rpcData.bits, position += 4, 4, 'hex');
-                header.write(nTime, position += 4, 4, 'hex');
-                header.write(merkleRoot, position += 4, 32, 'hex');
-                header.write(this.rpcData.previousblockhash, position += 32, 32, 'hex');
+                header.write(nonce, position, 4, "hex");
+                header.write(this.rpcData.bits, position += 4, 4, "hex");
+                header.write(nTime, position += 4, 4, "hex");
+                header.write(merkleRoot, position += 4, 32, "hex");
+                header.write(this.rpcData.previousblockhash, position += 32, 32, "hex");
                 header.writeUInt32BE(this.rpcData.version, position + 32);
                 var header = util.reverseBuffer(header);
                 return header;
@@ -173,22 +173,22 @@ var BlockTemplate = function(jobId, rpcData, extraNoncePlaceholder, options) {
                     txCount = "0" + txCount;
                 }
                 if (this.txCount <= 0xfc) {
-                    var varInt = Buffer.from(txCount, 'hex');
+                    var varInt = Buffer.from(txCount, "hex");
                 }
                 else if (this.txCount <= 0x7fff) {
                     if (txCount.length == 2) {
                         txCount = "00" + txCount;
                     }
                     var varInt = Buffer.concat([
-                        Buffer.from('FD', 'hex'),
-                        util.reverseBuffer(Buffer.from(txCount, 'hex'))
+                        Buffer.from("FD", "hex"),
+                        util.reverseBuffer(Buffer.from(txCount, "hex"))
                     ]);
                 }
                 var buffer = Buffer.concat([
                     header,
                     soln,
                     varInt,
-                    Buffer.from(this.generation[1], 'hex'),
+                    Buffer.from(this.generation[1], "hex"),
                     this.transactions,
                 ]);
                 return buffer;
@@ -216,12 +216,12 @@ var BlockTemplate = function(jobId, rpcData, extraNoncePlaceholder, options) {
                 if (!this.jobParams) {
                     this.jobParams = [
                         this.jobId,
-                        util.packUInt32LE(this.rpcData.version).toString('hex'),
+                        util.packUInt32LE(this.rpcData.version).toString("hex"),
                         this.prevHashReversed,
-                        util.reverseBuffer(new Buffer(this.merkle, 'hex')).toString('hex'),
+                        util.reverseBuffer(new Buffer(this.merkle, "hex")).toString("hex"),
                         this.hashReserved,
-                        util.packUInt32LE(this.rpcData.curtime).toString('hex'),
-                        util.reverseBuffer(new Buffer(this.rpcData.bits, 'hex')).toString('hex'),
+                        util.packUInt32LE(this.rpcData.curtime).toString("hex"),
+                        util.reverseBuffer(new Buffer(this.rpcData.bits, "hex")).toString("hex"),
                         true
                     ]
                 }
@@ -233,12 +233,12 @@ var BlockTemplate = function(jobId, rpcData, extraNoncePlaceholder, options) {
                     this.jobParams = [
                         this.jobId,
                         this.prevHashReversed,
-                        this.generation[0][0].toString('hex'),
-                        this.generation[0][1].toString('hex'),
+                        this.generation[0][0].toString("hex"),
+                        this.generation[0][1].toString("hex"),
                         getMerkleHashes(this.merkle.steps),
-                        util.packInt32BE(this.rpcData.version).toString('hex'),
+                        util.packInt32BE(this.rpcData.version).toString("hex"),
                         this.rpcData.bits,
-                        util.packUInt32BE(this.rpcData.curtime).toString('hex'),
+                        util.packUInt32BE(this.rpcData.curtime).toString("hex"),
                         true
                     ];
                 }
