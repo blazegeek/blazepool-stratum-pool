@@ -1,4 +1,3 @@
-/* jshint esversion: 6 */
 /*
  *
  * Pool (Updated)
@@ -6,16 +5,16 @@
  */
 
 // Import Required Modules
-var events = require('events');
-var async = require('async');
-var util = require('./util.js');
+var events = require("events");
+var async = require("async");
+var util = require("./util.js");
 
 // Import Required Modules
-var Difficulty = require('./difficulty.js');
-var Daemon = require('./daemon.js');
-var Manager = require('./manager.js');
-var Peer = require('./peer.js');
-var Stratum = require('./stratum.js');
+var Difficulty = require("./difficulty.js");
+var Daemon = require("./daemon.js");
+var Manager = require("./manager.js");
+var Peer = require("./peer.js");
+var Stratum = require("./stratum.js");
 
 // Pool Main Function
 var Pool = function(options, authorizeFn) {
@@ -24,25 +23,25 @@ var Pool = function(options, authorizeFn) {
     var _this = this;
     var lastBlockHex = "";
     var blockPollingIntervalId;
-    var emitLog = function(text) { _this.emit('log', 'debug'  , text); };
-    var emitWarningLog = function(text) { _this.emit('log', 'warning', text); };
-    var emitErrorLog = function(text) { _this.emit('log', 'error'  , text); };
-    var emitSpecialLog = function(text) { _this.emit('log', 'special', text); };
+    var emitLog = function(text) { _this.emit("log", "debug"  , text); };
+    var emitWarningLog = function(text) { _this.emit("log", "warning", text); };
+    var emitErrorLog = function(text) { _this.emit("log", "error"  , text); };
+    var emitSpecialLog = function(text) { _this.emit("log", "special", text); };
 
     // Check if Algorithm is Supported
     this.options = options;
     if (!(options.coin.algorithm in algorithms)) {
-        emitErrorLog('The ' + options.coin.algorithm + ' hashing algorithm is not supported.');
+        emitErrorLog("The " + options.coin.algorithm + " hashing algorithm is not supported.");
         throw new Error();
     }
 
     // Process Block when Found
     this.processBlockNotify = function(blockHash, sourceTrigger) {
-        emitLog('Block notification via ' + sourceTrigger);
-        if (typeof(_this.manager.currentJob) !== 'undefined' && blockHash !== _this.manager.currentJob.rpcData.previousblockhash) {
+        emitLog("Block notification via " + sourceTrigger);
+        if (typeof(_this.manager.currentJob) !== "undefined" && blockHash !== _this.manager.currentJob.rpcData.previousblockhash) {
             getBlockTemplate(function(error, result) {
                 if (error) {
-                    emitErrorLog('Block notify error getting block template for ' + options.coin.name);
+                    emitErrorLog("Block notify error getting block template for " + options.coin.name);
                 }
             });
         }
@@ -50,12 +49,12 @@ var Pool = function(options, authorizeFn) {
 
     // Configure Port Difficulty
     this.setDifficulty = function(port, difficultyConfig) {
-        if (typeof(_this.difficulty[port]) != 'undefined' ) {
+        if (typeof(_this.difficulty[port]) != "undefined" ) {
             _this.difficulty[port].removeAllListeners();
         }
         var difficultyInstance = new Difficulty(port, difficultyConfig);
         _this.difficulty[port] = difficultyInstance;
-        _this.difficulty[port].on('newDifficulty', function(client, newDiff) {
+        _this.difficulty[port].on("newDifficulty", function(client, newDiff) {
             client.enqueueNextDifficulty(newDiff);
         });
     };
@@ -73,7 +72,7 @@ var Pool = function(options, authorizeFn) {
                         setupPeer();
                         startStratumServer(function() {
                             outputPoolInfo();
-                            _this.emit('started');
+                            _this.emit("started");
                         });
                     });
                 });
@@ -95,27 +94,27 @@ var Pool = function(options, authorizeFn) {
 
         // Check to Ensure Daemons are Configured
         if (!Array.isArray(options.daemons) || options.daemons.length < 1) {
-            emitErrorLog('No daemons have been configured - pool cannot start');
+            emitErrorLog("No daemons have been configured - pool cannot start");
             return;
         }
 
         // Establish Daemon
         _this.daemon = new Daemon.interface(options.daemons, function(severity, message) {
-            _this.emit('log', severity , message);
+            _this.emit("log", severity , message);
         });
 
         // Establish Online Functionality
-        _this.daemon.once('online', function() {
+        _this.daemon.once("online", function() {
             callback();
         });
 
         // Establish Failed Connection Functionality
-        _this.daemon.on('connectionFailed', function(error) {
-            emitErrorLog('Failed to connect daemon(s): ' + JSON.stringify(error));
+        _this.daemon.on("connectionFailed", function(error) {
+            emitErrorLog("Failed to connect daemon(s): " + JSON.stringify(error));
         });
 
         // Establish Error Functionality
-        _this.daemon.on('error', function(message) {
+        _this.daemon.on("error", function(message) {
             emitErrorLog(message);
         });
 
@@ -128,24 +127,24 @@ var Pool = function(options, authorizeFn) {
 
         // Define Initial RPC Calls
         var batchRPCCommand = [
-            ['validateaddress', [options.addresses.address]],
-            ['getdifficulty', []],
-            ['getmininginfo', []],
-            ['submitblock', []]
+            ["validateaddress", [options.addresses.address]],
+            ["getdifficulty", []],
+            ["getmininginfo", []],
+            ["submitblock", []]
         ];
 
         // Check if Coin has GetInfo Defined
         if (options.coin.hasGetInfo) {
-            batchRPCCommand.push(['getinfo', []]);
+            batchRPCCommand.push(["getinfo", []]);
         }
         else {
-            batchRPCCommand.push(['getblockchaininfo', []], ['getnetworkinfo', []]);
+            batchRPCCommand.push(["getblockchaininfo", []], ["getnetworkinfo", []]);
         }
 
         // Manage RPC Batches
         _this.daemon.batchCmd(batchRPCCommand, function(error, results) {
             if (error || !results) {
-                emitErrorLog('Could not start pool, error with init batch RPC call: ' + JSON.stringify(error));
+                emitErrorLog("Could not start pool, error with init batch RPC call: " + JSON.stringify(error));
                 return;
             }
 
@@ -156,15 +155,15 @@ var Pool = function(options, authorizeFn) {
                 var r = results[i];
                 rpcResults[rpcCall] = r.result || r.error;
 
-                if (rpcCall !== 'submitblock' && (r.error || !r.result)) {
-                    emitErrorLog('Could not start pool, error with init RPC ' + rpcCall + ' - ' + JSON.stringify(r.error));
+                if (rpcCall !== "submitblock" && (r.error || !r.result)) {
+                    emitErrorLog("Could not start pool, error with init RPC " + rpcCall + " - " + JSON.stringify(r.error));
                     return;
                 }
             }
 
             // Check Pool Address is Valid
             if (!rpcResults.validateaddress.isvalid) {
-                emitErrorLog('Daemon reports address is not valid');
+                emitErrorLog("Daemon reports address is not valid");
                 return;
             }
 
@@ -173,7 +172,7 @@ var Pool = function(options, authorizeFn) {
                 options.testnet = (rpcResults.getinfo.testnet === true) ? true : false;
             }
             else {
-                options.testnet = (rpcResults.getblockchaininfo.chain === 'test') ? true : false;
+                options.testnet = (rpcResults.getblockchaininfo.chain === "test") ? true : false;
             }
             options.network = (options.testnet ? options.coin.testnet : options.coin.mainnet);
 
@@ -181,8 +180,8 @@ var Pool = function(options, authorizeFn) {
             options.poolAddress = rpcResults.validateaddress.address;
             options.protocolVersion = options.coin.hasGetInfo ? rpcResults.getinfo.protocolversion : rpcResults.getnetworkinfo.protocolversion;
             var difficulty = options.coin.hasGetInfo ? rpcResults.getinfo.difficulty : rpcResults.getblockchaininfo.difficulty;
-            if (typeof(difficulty) == 'object') {
-                difficulty = difficulty['proof-of-work'];
+            if (typeof(difficulty) == "object") {
+                difficulty = difficulty["proof-of-work"];
             }
 
             // Establish Coin Initial Statistics
@@ -193,14 +192,14 @@ var Pool = function(options, authorizeFn) {
             };
 
             // Check if Pool is Able to Submit Blocks
-            if (rpcResults.submitblock.message === 'Method not found') {
+            if (rpcResults.submitblock.message === "Method not found") {
                 options.hasSubmitMethod = false;
             }
             else if (rpcResults.submitblock.code === -1) {
                 options.hasSubmitMethod = true;
             }
             else {
-                emitErrorLog('Could not detect block submission RPC method, ' + JSON.stringify(results));
+                emitErrorLog("Could not detect block submission RPC method, " + JSON.stringify(results));
                 return;
             }
 
@@ -224,14 +223,14 @@ var Pool = function(options, authorizeFn) {
             options.feePercent += percent;
         }
         if (recipients.length === 0) {
-            emitErrorLog('No rewardRecipients have been setup which means no fees will be taken');
+            emitErrorLog("No rewardRecipients have been setup which means no fees will be taken");
         }
         options.recipients = recipients;
     }
 
     // Check Whether Block was Accepted by Daemon
     function checkBlockAccepted(blockHash, callback) {
-        _this.daemon.cmd('getblock', [blockHash], function(results) {
+        _this.daemon.cmd("getblock", [blockHash], function(results) {
             var validResults = results.filter(function(result) {
                 return result.response && (result.response.hash === blockHash);
             });
@@ -265,10 +264,10 @@ var Pool = function(options, authorizeFn) {
         }
 
         // Get Current Block Template
-        _this.daemon.cmd('getblocktemplate', [callConfig], function(result) {
+        _this.daemon.cmd("getblocktemplate", [callConfig], function(result) {
             if (result.error) {
-                emitErrorLog('getblocktemplate call failed for daemon instance ' +
-                    result.instance.index + ' with error ' + JSON.stringify(result.error));
+                emitErrorLog("getblocktemplate call failed for daemon instance " +
+                    result.instance.index + " with error " + JSON.stringify(result.error));
                 callback(result.error);
             }
             else {
@@ -285,12 +284,12 @@ var Pool = function(options, authorizeFn) {
         // Check which Submit Method is Supported
         var rpcCommand, rpcArgs;
         if (options.hasSubmitMethod) {
-            rpcCommand = 'submitblock';
+            rpcCommand = "submitblock";
             rpcArgs = [blockHex];
         }
         else {
-            rpcCommand = 'getblocktemplate';
-            rpcArgs = [{'mode': 'submit', 'data': blockHex}];
+            rpcCommand = "getblocktemplate";
+            rpcArgs = [{"mode": "submit", "data": blockHex}];
         }
 
         // Establish Submission Functionality
@@ -300,18 +299,18 @@ var Pool = function(options, authorizeFn) {
                 for (var i = 0; i < results.length; i++) {
                     var result = results[i];
                     if (result.error) {
-                        emitErrorLog('RPC error with daemon instance ' +
-                                result.instance.index + ' when submitting block with ' + rpcCommand + ' ' +
+                        emitErrorLog("RPC error with daemon instance " +
+                                result.instance.index + " when submitting block with " + rpcCommand + " " +
                                 JSON.stringify(result.error)
                         );
                         return;
                     }
-                    else if (result.response === 'rejected') {
-                        emitErrorLog('Daemon instance ' + result.instance.index + ' rejected a supposedly valid block');
+                    else if (result.response === "rejected") {
+                        emitErrorLog("Daemon instance " + result.instance.index + " rejected a supposedly valid block");
                         return;
                     }
                 }
-                emitLog('Submitted Block using ' + rpcCommand + ' successfully to daemon instance(s)');
+                emitLog("Submitted Block using " + rpcCommand + " successfully to daemon instance(s)");
                 callback();
             }
         );
@@ -324,29 +323,29 @@ var Pool = function(options, authorizeFn) {
         _this.manager = new Manager(options);
 
         // Establish Log Functionality
-        _this.manager.on('log', function(severity, message) {
-            _this.emit('log', severity, message);
+        _this.manager.on("log", function(severity, message) {
+            _this.emit("log", severity, message);
         });
 
         // Establish New Block Functionality
-        _this.manager.on('newBlock', function(blockTemplate) {
+        _this.manager.on("newBlock", function(blockTemplate) {
             if (_this.stratumServer) {
                 _this.stratumServer.broadcastMiningJobs(blockTemplate.getJobParams(options));
             }
         });
 
         // Establish Share Functionality
-        _this.manager.on('share', function(shareData, blockHex) {
+        _this.manager.on("share", function(shareData, blockHex) {
             var isValidShare = !shareData.error;
             var isValidBlock = !!blockHex;
             var emitShare = function() {
-                _this.emit('share', isValidShare, isValidBlock, shareData);
+                _this.emit("share", isValidShare, isValidBlock, shareData);
             };
             if (!isValidBlock)
                 emitShare();
             else {
                 if (lastBlockHex === blockHex) {
-                    emitWarningLog('Warning, ignored duplicate submit block ' + blockHex);
+                    emitWarningLog("Warning, ignored duplicate submit block " + blockHex);
                 }
                 else {
                     lastBlockHex = blockHex;
@@ -358,7 +357,7 @@ var Pool = function(options, authorizeFn) {
                         emitShare();
                         getBlockTemplate(function(error, result, foundNewBlock) {
                             if (foundNewBlock)
-                                emitLog('Block notification via RPC after block submission');
+                                emitLog("Block notification via RPC after block submission");
                         });
                     });
                 });
@@ -366,7 +365,7 @@ var Pool = function(options, authorizeFn) {
         });
 
         // Establish Updated Block Functionality
-        _this.manager.on('updatedBlock', function(blockTemplate) {
+        _this.manager.on("updatedBlock", function(blockTemplate) {
             if (_this.stratumServer) {
                 var job = blockTemplate.getJobParams(options);
                 job[8] = false;
@@ -392,7 +391,7 @@ var Pool = function(options, authorizeFn) {
 
         // Check for Blockchain to be Fully Synced
         var checkSynced = function(displayNotSynced) {
-            _this.daemon.cmd('getblocktemplate', [{"capabilities": [ "coinbasetxn", "workid", "coinbase/append" ], "rules": [ "segwit" ]}], function(results) {
+            _this.daemon.cmd("getblocktemplate", [{"capabilities": [ "coinbasetxn", "workid", "coinbase/append" ], "rules": [ "segwit" ]}], function(results) {
                 var synced = results.every(function(r) {
                     return !r.error || r.error.code !== -10;
                 });
@@ -404,7 +403,7 @@ var Pool = function(options, authorizeFn) {
                         displayNotSynced();
                     }
                     setTimeout(checkSynced, 5000);
-                    if (!process.env.forkId || process.env.forkId === '0') {
+                    if (!process.env.forkId || process.env.forkId === "0") {
                         generateProgress();
                     }
                 }
@@ -413,27 +412,27 @@ var Pool = function(options, authorizeFn) {
 
         // Check and Return Message if Not Synced
         checkSynced(function() {
-            if (!process.env.forkId || process.env.forkId === '0') {
-                emitErrorLog('Daemon is still syncing with network (download blockchain) - server will be started once synced');
+            if (!process.env.forkId || process.env.forkId === "0") {
+                emitErrorLog("Daemon is still syncing with network (download blockchain) - server will be started once synced");
             }
         });
 
         // Calculate Current Progress on Sync
         var generateProgress = function() {
-            var cmd = options.coin.hasGetInfo ? 'getinfo' : 'getblockchaininfo';
+            var cmd = options.coin.hasGetInfo ? "getinfo" : "getblockchaininfo";
             _this.daemon.cmd(cmd, [], function(results) {
                 var blockCount = results.sort(function(a, b) {
                     return b.response.blocks - a.response.blocks;
                 })[0].response.blocks;
 
                 // Compare with Peers to Get Percentage Synced
-                _this.daemon.cmd('getpeerinfo', [], function(results) {
+                _this.daemon.cmd("getpeerinfo", [], function(results) {
                     var peers = results[0].response;
                     var totalBlocks = peers.sort(function(a, b) {
                         return b.startingheight - a.startingheight;
                     })[0].startingheight;
                     var percent = (blockCount / totalBlocks * 100).toFixed(2);
-                    emitWarningLog('Downloaded ' + percent + '% of blockchain from ' + peers.length + ' peers');
+                    emitWarningLog("Downloaded " + percent + "% of blockchain from " + peers.length + " peers");
                 });
             });
         };
@@ -445,7 +444,7 @@ var Pool = function(options, authorizeFn) {
         // Establish First Block Template
         getBlockTemplate(function(error, result) {
             if (error) {
-                emitErrorLog('Error with getblocktemplate on creating first job, server cannot start');
+                emitErrorLog("Error with getblocktemplate on creating first job, server cannot start");
                 return;
             }
 
@@ -455,10 +454,10 @@ var Pool = function(options, authorizeFn) {
             Object.keys(options.ports).forEach(function(port) {
                 var portDiff = options.ports[port].diff;
                 if (networkDiffAdjusted < portDiff)
-                    portWarnings.push('port ' + port + ' w/ diff ' + portDiff);
+                    portWarnings.push("port " + port + " w/ diff " + portDiff);
             });
-            if (portWarnings.length > 0 && (!process.env.forkId || process.env.forkId === '0')) {
-                var warnMessage = 'Network diff of ' + networkDiffAdjusted + ' is lower than ' + portWarnings.join(' and ');
+            if (portWarnings.length > 0 && (!process.env.forkId || process.env.forkId === "0")) {
+                var warnMessage = "Network diff of " + networkDiffAdjusted + " is lower than " + portWarnings.join(" and ");
                 emitWarningLog(warnMessage);
             }
 
@@ -470,7 +469,7 @@ var Pool = function(options, authorizeFn) {
     // Initialize Pool Block Polling
     function setupBlockPolling() {
         if (typeof options.blockRefreshInterval !== "number" || options.blockRefreshInterval <= 0) {
-            emitLog('Block template polling has been disabled');
+            emitLog("Block template polling has been disabled");
             return;
         }
         var pollingFlag = false;
@@ -480,7 +479,7 @@ var Pool = function(options, authorizeFn) {
                 pollingFlag = true;
                 getBlockTemplate(function(error, result, foundNewBlock) {
                     if (foundNewBlock) {
-                        emitLog('Block notification via RPC polling');
+                        emitLog("Block notification via RPC polling");
                     }
                     pollingFlag = false;
                 });
@@ -495,11 +494,11 @@ var Pool = function(options, authorizeFn) {
         if (!options.p2p || !options.p2p.enabled)
             return;
         if (options.testnet && !options.coin.peerMagicTestnet) {
-            emitErrorLog('p2p cannot be enabled in testnet without peerMagicTestnet set in coin configuration');
+            emitErrorLog("p2p cannot be enabled in testnet without peerMagicTestnet set in coin configuration");
             return;
         }
         else if (!options.coin.peerMagic) {
-            emitErrorLog('p2p cannot be enabled without peerMagic set in coin configuration');
+            emitErrorLog("p2p cannot be enabled without peerMagic set in coin configuration");
             return;
         }
 
@@ -507,32 +506,32 @@ var Pool = function(options, authorizeFn) {
         _this.peer = new Peer(options);
 
         // Establish Connection Functionality
-        _this.peer.on('connected', function() {});
-        _this.peer.on('disconnected', function() {});
+        _this.peer.on("connected", function() {});
+        _this.peer.on("disconnected", function() {});
 
         // Establish Rejected Connection Functionality
-        _this.peer.on('connectionRejected', function() {
-            emitErrorLog('p2p connection failed - likely incorrect p2p magic value');
+        _this.peer.on("connectionRejected", function() {
+            emitErrorLog("p2p connection failed - likely incorrect p2p magic value");
         });
 
         // Establish Failed Connection Functionality
-        _this.peer.on('connectionFailed', function(e) {
-            emitErrorLog('p2p connection failed - likely incorrect host or port');
+        _this.peer.on("connectionFailed", function(e) {
+            emitErrorLog("p2p connection failed - likely incorrect host or port");
         });
 
         // Establish Socket Error Functionality
-        _this.peer.on('socketError', function(e) {
-            emitErrorLog('p2p had a socket error ' + JSON.stringify(e));
+        _this.peer.on("socketError", function(e) {
+            emitErrorLog("p2p had a socket error " + JSON.stringify(e));
         });
 
         // Establish Error Functionality
-        _this.peer.on('error', function(msg) {
-            emitWarningLog('p2p had an error ' + msg);
+        _this.peer.on("error", function(msg) {
+            emitWarningLog("p2p had an error " + msg);
         });
 
         // Establish Found Block Functionality
-        _this.peer.on('blockFound', function(hash) {
-            _this.processBlockNotify(hash, 'p2p');
+        _this.peer.on("blockFound", function(hash) {
+            _this.processBlockNotify(hash, "p2p");
         });
     }
 
@@ -543,7 +542,7 @@ var Pool = function(options, authorizeFn) {
         _this.stratumServer = new Stratum.server(options, authorizeFn);
 
         // Establish Started Functionality
-        _this.stratumServer.on('started', function() {
+        _this.stratumServer.on("started", function() {
             var stratumPorts = Object.keys(options.ports);
             stratumPorts = stratumPorts.filter(function(port) {
                 return options.ports[port].enabled === true;
@@ -554,11 +553,11 @@ var Pool = function(options, authorizeFn) {
         });
 
         // Establish Timeout Functionality
-        _this.stratumServer.on('broadcastTimeout', function() {
+        _this.stratumServer.on("broadcastTimeout", function() {
             if (options.debug) {
-                emitLog('No new blocks for ' + options.jobRebroadcastTimeout + ' seconds - updating transactions & rebroadcasting work');
+                emitLog("No new blocks for " + options.jobRebroadcastTimeout + " seconds - updating transactions & rebroadcasting work");
             }
-            _this.daemon.cmd('getblocktemplate', [], function() {});
+            _this.daemon.cmd("getblocktemplate", [], function() {});
             getBlockTemplate(function(error, rpcData, processedBlock) {
                 if (error || processedBlock) return;
                 _this.manager.updateCurrentJob(rpcData);
@@ -566,27 +565,27 @@ var Pool = function(options, authorizeFn) {
         });
 
         // Establish New Connection Functionality
-        _this.stratumServer.on('client.connected', function(client) {
+        _this.stratumServer.on("client.connected", function(client) {
 
             // Manage/Record Client Difficulty
-            if (typeof(_this.difficulty[client.socket.localPort]) !== 'undefined') {
+            if (typeof(_this.difficulty[client.socket.localPort]) !== "undefined") {
                 _this.difficulty[client.socket.localPort].manageClient(client);
             }
 
             // Establish Client Difficulty Functionality
-            client.on('difficultyChanged', function(diff) {
-                _this.emit('difficultyUpdate', client.workerName, diff);
+            client.on("difficultyChanged", function(diff) {
+                _this.emit("difficultyUpdate", client.workerName, diff);
             });
 
             // Establish Client Subscription Functionality
-            client.on('subscription', function(params, resultCallback) {
+            client.on("subscription", function(params, resultCallback) {
                 switch (options.coin.algorithm) {
 
                     // Equihash Subscription Handling
                     case "equihash":
                         var extraNonce = _this.manager.extraNonceCounter.next();
                         resultCallback(null, extraNonce, extraNonce);
-                        if (typeof(options.ports[client.socket.localPort]) !== 'undefined' && options.ports[client.socket.localPort].diff) {
+                        if (typeof(options.ports[client.socket.localPort]) !== "undefined" && options.ports[client.socket.localPort].diff) {
                             this.sendDifficulty(options.ports[client.socket.localPort].diff);
                         }
                         else {
@@ -599,7 +598,7 @@ var Pool = function(options, authorizeFn) {
                         var extraNonce = _this.manager.extraNonceCounter.next();
                         var extraNonce2Size = _this.manager.extraNonce2Size;
                         resultCallback(null, extraNonce, extraNonce2Size);
-                        if (typeof(options.ports[client.socket.localPort]) !== 'undefined' && options.ports[client.socket.localPort].diff) {
+                        if (typeof(options.ports[client.socket.localPort]) !== "undefined" && options.ports[client.socket.localPort].diff) {
                             this.sendDifficulty(options.ports[client.socket.localPort].diff);
                         }
                         else {
@@ -610,7 +609,7 @@ var Pool = function(options, authorizeFn) {
             });
 
             // Establish Client Submission Functionality
-            client.on('submit', function(message, resultCallback) {
+            client.on("submit", function(message, resultCallback) {
                 switch (options.coin.algorithm) {
 
                     // Equihash Share Handling
@@ -650,75 +649,75 @@ var Pool = function(options, authorizeFn) {
             });
 
             // Establish Client Error Messaging Functionality
-            client.on('malformedMessage', function(message) {});
+            client.on("malformedMessage", function(message) {});
 
             // Establish Client Socket Error Functionality
-            client.on('socketError', function(e) {
-                emitWarningLog('Socket error from ' + client.getLabel() + ': ' + JSON.stringify(e));
+            client.on("socketError", function(e) {
+                emitWarningLog("Socket error from " + client.getLabel() + ": " + JSON.stringify(e));
             });
 
             // Establish Client Socket Timeout Functionality
-            client.on('socketTimeout', function(reason) {
-                emitWarningLog('Connected timed out for ' + client.getLabel() + ': ' + reason);
+            client.on("socketTimeout", function(reason) {
+                emitWarningLog("Connected timed out for " + client.getLabel() + ": " + reason);
             });
 
             // Establish Client Disconnect Functionality
-            client.on('socketDisconnect', function() {});
+            client.on("socketDisconnect", function() {});
 
             // Establish Client Banned Functionality
-            client.on('kickedBannedIP', function(remainingBanTime) {
-                emitLog('Rejected incoming connection from ' + client.remoteAddress + ' banned for ' + remainingBanTime + ' more seconds');
+            client.on("kickedBannedIP", function(remainingBanTime) {
+                emitLog("Rejected incoming connection from " + client.remoteAddress + " banned for " + remainingBanTime + " more seconds");
             });
 
             // Establish Client Forgiveness Functionality
-            client.on('forgaveBannedIP', function() {
-                emitLog('Forgave banned IP ' + client.remoteAddress);
+            client.on("forgaveBannedIP", function() {
+                emitLog("Forgave banned IP " + client.remoteAddress);
             });
 
             // Establish Client Unknown Stratum Functionality
-            client.on('unknownStratumMethod', function(fullMessage) {
-                emitLog('Unknown stratum method from ' + client.getLabel() + ': ' + fullMessage.method);
+            client.on("unknownStratumMethod", function(fullMessage) {
+                emitLog("Unknown stratum method from " + client.getLabel() + ": " + fullMessage.method);
             });
 
             // Establish Client DDOS Functionality
-            client.on('socketFlooded', function() {
-                emitWarningLog('Detected socket flooding from ' + client.getLabel());
+            client.on("socketFlooded", function() {
+                emitWarningLog("Detected socket flooding from " + client.getLabel());
             });
 
             // Establish Client TCP Error Functionality
-            client.on('tcpProxyError', function(data) {
-                emitErrorLog('Client IP detection failed, tcpProxyProtocol is enabled yet did not receive proxy protocol message, instead got data: ' + data);
+            client.on("tcpProxyError", function(data) {
+                emitErrorLog("Client IP detection failed, tcpProxyProtocol is enabled yet did not receive proxy protocol message, instead got data: " + data);
             });
 
             // Establish Client Banning Functionality
-            client.on('triggerBan', function(reason) {
-                emitWarningLog('Banned triggered for ' + client.getLabel() + ': ' + reason);
-                _this.emit('banIP', client.remoteAddress, client.workerName);
+            client.on("triggerBan", function(reason) {
+                emitWarningLog("Banned triggered for " + client.getLabel() + ": " + reason);
+                _this.emit("banIP", client.remoteAddress, client.workerName);
             });
         });
     }
 
     // Output Derived Pool Information
     function outputPoolInfo() {
-        var startMessage = 'Stratum Pool Server Started for ' + options.coin.name +
-            ' [' + options.coin.symbol.toUpperCase() + '] {' + options.coin.algorithm + '}';
-        if (process.env.forkId && process.env.forkId !== '0') {
+        var startMessage = "Stratum Pool Server Started for " + options.coin.name +
+            " [" + options.coin.symbol.toUpperCase() + "] {" + options.coin.algorithm + "}";
+        if (process.env.forkId && process.env.forkId !== "0") {
             emitLog(startMessage);
             return;
         }
         var infoLines = [startMessage,
-                'Network Connected:\t' + (options.testnet ? 'Testnet' : 'Mainnet'),
-                'Current Block Height:\t' + _this.manager.currentJob.rpcData.height,
-                'Current Connect Peers:\t' + options.initStats.connections,
-                'Current Block Diff:\t' + _this.manager.currentJob.difficulty * algorithms[options.coin.algorithm].multiplier,
-                'Network Difficulty:\t' + options.initStats.difficulty,
-                'Stratum Port(s):\t' + _this.options.initStats.stratumPorts.join(', '),
-                'Pool Fee Percent:\t' + _this.options.feePercent + '%'
+                "Network Connected:\t" + (options.testnet ? "Testnet" : "Mainnet"),
+                "Current Block Height:\t" + _this.manager.currentJob.rpcData.height,
+                "Current Connect Peers:\t" + options.initStats.connections,
+                "Current Block Diff:\t" + _this.manager.currentJob.difficulty * algorithms[options.coin.algorithm].multiplier,
+                "Network Difficulty:\t" + options.initStats.difficulty,
+                "Stratum Port(s):\t" + _this.options.initStats.stratumPorts.join(", "),
+                "Pool Fee Percent:\t" + _this.options.feePercent + "%"
         ];
         if (typeof options.blockRefreshInterval === "number" && options.blockRefreshInterval > 0) {
-            infoLines.push('Block Polling Every:\t' + options.blockRefreshInterval + ' ms');
+            infoLines.push("Block Polling Every:\t" + options.blockRefreshInterval + " ms");
         }
-        emitSpecialLog(infoLines.join('\n\t\t\t\t\t\t'));
+        emitSpecialLog(infoLines.join("\n\t\t\t\t\t\t"));
     }
 };
 
