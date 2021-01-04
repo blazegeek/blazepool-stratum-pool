@@ -5,8 +5,8 @@
  */
 
 // Import Required Modules
-var bitcoin = require('blazepool-utxo-lib');
-var util = require('./util.js');
+var bitcoin = require("blazepool-utxo-lib");
+var util = require("./util.js");
 
 // Generate Combined Transactions (Bitcoin)
 var Transactions = function() {
@@ -35,14 +35,14 @@ var Transactions = function() {
         var poolAddressScript = util.addressToScript(options.network, options.poolAddress);
 
         // Set Transaction Version
-        if (options.coin.sapling === true || (typeof options.coin.sapling === 'number' && options.coin.sapling <= rpcData.height)) {
+        if (options.coin.sapling === true || (typeof options.coin.sapling === "number" && options.coin.sapling <= rpcData.height)) {
             txBuilder.setVersion(bitcoin.Transaction.ZCASH_SAPLING_VERSION);
-        } else if (options.coin.overwinter === true || (typeof options.coin.overwinter === 'number' && options.coin.overwinter <= rpcData.height)) {
+        } else if (options.coin.overwinter === true || (typeof options.coin.overwinter === "number" && options.coin.overwinter <= rpcData.height)) {
             txBuilder.setVersion(bitcoin.Transaction.ZCASH_OVERWINTER_VERSION);
         }
 
         // Serialize Block Height [1]
-        var blockHeightSerial = (rpcData.height.toString(16).length % 2 === 0 ? '' : '0') + rpcData.height.toString(16);
+        var blockHeightSerial = (rpcData.height.toString(16).length % 2 === 0 ? "" : "0") + rpcData.height.toString(16);
         let height = Math.ceil((rpcData.height << 1).toString(2).length / 8);
         let lengthDiff = blockHeightSerial.length / 2 - height;
         for (let i = 0; i < lengthDiff; i++) {
@@ -52,13 +52,13 @@ var Transactions = function() {
         // Serialize Block Height [2]
         let length = `0${height}`;
         let serializedBlockHeight = new Buffer.concat([
-            new Buffer(length, 'hex'),
-            util.reverseBuffer(new Buffer(blockHeightSerial, 'hex')),
-            new Buffer('00', 'hex')
+            new Buffer(length, "hex"),
+            util.reverseBuffer(new Buffer(blockHeightSerial, "hex")),
+            new Buffer("00", "hex")
         ]);
 
         // Add Serialized Block Height to Transaction
-        txBuilder.addInput(new Buffer('0000000000000000000000000000000000000000000000000000000000000000', 'hex'),
+        txBuilder.addInput(new Buffer("0000000000000000000000000000000000000000000000000000000000000000", "hex"),
             4294967295,
             4294967295,
             new Buffer.concat([
@@ -155,7 +155,7 @@ var Transactions = function() {
         // Finalize Transaction
         var generation = txBuilder.build();
         var txHex = generation.toHex();
-        var txHash = generation.getHash().toString('hex');
+        var txHash = generation.getHash().toString("hex");
 
         // Return Generated Transaction
         return [txHex, txHash];
@@ -181,7 +181,7 @@ var Transactions = function() {
         if (rpcData.coinbase_payload && rpcData.coinbase_payload.length > 0) {
             txVersion = 3;
             txType = 5;
-            txExtraPayload = new Buffer(rpcData.coinbase_payload, 'hex');
+            txExtraPayload = new Buffer(rpcData.coinbase_payload, "hex");
         }
         if (!(rpcData.coinbasetxn && rpcData.coinbasetxn.data)) {
             txVersion = txVersion + (txType << 16);
@@ -192,7 +192,7 @@ var Transactions = function() {
         var rewardToPool = reward;
         var poolIdentifier = options.identifier || "blazepool.blazegeek.com";
         var poolAddressScript = util.addressToScript(options.network, options.poolAddress);
-        var coinbaseAux = rpcData.coinbaseaux.flags ? Buffer.from(rpcData.coinbaseaux.flags, 'hex') : Buffer.from([]);
+        var coinbaseAux = rpcData.coinbaseaux.flags ? Buffer.from(rpcData.coinbaseaux.flags, "hex") : Buffer.from([]);
 
         // Handle Comments if Necessary
         var txComment = options.coin.txMessages === true ?
@@ -238,7 +238,7 @@ var Transactions = function() {
                     var payeeReward = rpcData.masternode[i].amount;
                     var payeeScript;
                     if (rpcData.masternode[i].script) {
-                        payeeScript = Buffer.from(rpcData.masternode[i].script, 'hex');
+                        payeeScript = Buffer.from(rpcData.masternode[i].script, "hex");
                     }
                     else {
                         compileScript(rpcData.masternode[i].payee, options.network);
@@ -260,7 +260,7 @@ var Transactions = function() {
                 var payeeReward = rpcData.superblock[i].amount;
                 var payeeScript;
                 if (rpcData.superblock[i].script) {
-                    payeeScript = Buffer.from(rpcData.superblock[i].script, 'hex');
+                    payeeScript = Buffer.from(rpcData.superblock[i].script, "hex");
                 }
                 else {
                     compileScript(rpcData.superblock[i].payee, options.network);
@@ -318,7 +318,7 @@ var Transactions = function() {
 
         // Handle Witness Commitment
         if (rpcData.default_witness_commitment !== undefined) {
-            witness_commitment = Buffer.from(rpcData.default_witness_commitment, 'hex');
+            witness_commitment = Buffer.from(rpcData.default_witness_commitment, "hex");
             txOutputBuffers.unshift(Buffer.concat([
                 util.packInt64LE(0),
                 util.varIntBuffer(witness_commitment.length),
