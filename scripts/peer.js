@@ -5,10 +5,10 @@
  */
 
 // Import Required Modules
-var net = require('net');
-var crypto = require('crypto');
-var events = require('events');
-var util = require('./util.js');
+var net = require("net");
+var crypto = require("crypto");
+var events = require("events");
+var util = require("./util.js");
 
 // Generate String Buffer from Parameter Length
 var fixedLenStringBuffer = function(s, len) {
@@ -40,7 +40,7 @@ var readFlowingBytes = function (stream, amount, preRead, callback) {
             callback(returnData, lopped);
         }
         else
-            stream.once('data', readData);
+            stream.once("data", readData);
     };
     readData(Buffer.from([]));
 };
@@ -51,7 +51,7 @@ var Peer = function(options) {
     // Establish Peer Variables
     var _this = this;
     var client;
-    var magic = Buffer.from(options.testnet ? options.coin.peerMagicTestnet : options.coin.peerMagic, 'hex');
+    var magic = Buffer.from(options.testnet ? options.coin.peerMagicTestnet : options.coin.peerMagic, "hex");
     var magicInt = magic.readUInt32LE(0);
     var verack = false;
     var validConnectionConfig = true;
@@ -64,19 +64,19 @@ var Peer = function(options) {
     };
 
     // Establish Network Variables
-    var networkServices = Buffer.from('0100000000000000', 'hex'); //NODE_NETWORK services (value 1 packed as uint64)
-    var emptyNetAddress = Buffer.from('010000000000000000000000000000000000ffff000000000000', 'hex');
-    var userAgent = util.varStringBuffer('/node-stratum/');
-    var blockStartHeight = Buffer.from('00000000', 'hex'); //block start_height, can be empty
+    var networkServices = Buffer.from("0100000000000000", "hex"); //NODE_NETWORK services (value 1 packed as uint64)
+    var emptyNetAddress = Buffer.from("010000000000000000000000000000000000ffff000000000000", "hex");
+    var userAgent = util.varStringBuffer("/node-stratum/");
+    var blockStartHeight = Buffer.from("00000000", "hex"); //block start_height, can be empty
     var relayTransactions = options.p2p.disableTransactions === true ? Buffer.from([false]) : Buffer.from([]);
 
     // Establish Peer Commands
     var commands = {
-        version: commandStringBuffer('version'),
-        inv: commandStringBuffer('inv'),
-        verack: commandStringBuffer('verack'),
-        addr: commandStringBuffer('addr'),
-        getblocks: commandStringBuffer('getblocks')
+        version: commandStringBuffer("version"),
+        inv: commandStringBuffer("inv"),
+        verack: commandStringBuffer("verack"),
+        addr: commandStringBuffer("addr"),
+        getblocks: commandStringBuffer("getblocks")
     };
 
     // Initialize Peer Connection
@@ -94,25 +94,25 @@ var Peer = function(options) {
         });
 
         // Manage Peer Close Functionality
-        client.on('close', function () {
+        client.on("close", function () {
             if (verack) {
-                _this.emit('disconnected');
+                _this.emit("disconnected");
                 verack = false;
                 connectPeer();
             }
             else if (validConnectionConfig)
-                _this.emit('connectionRejected');
+                _this.emit("connectionRejected");
 
         });
 
         // Manage Peer Error Functionality
-        client.on('error', function (e) {
-            if (e.code === 'ECONNREFUSED') {
+        client.on("error", function (e) {
+            if (e.code === "ECONNREFUSED") {
                 validConnectionConfig = false;
-                _this.emit('connectionFailed');
+                _this.emit("connectionFailed");
             }
             else
-                _this.emit('socketError', e);
+                _this.emit("socketError", e);
         });
 
         // Allow Peer to Receive/Send Messages
@@ -125,7 +125,7 @@ var Peer = function(options) {
             readFlowingBytes(client, 24, preRead, function (header, lopped) {
                 var msgMagic = header.readUInt32LE(0);
                 if (msgMagic !== magicInt) {
-                    _this.emit('error', 'bad magic number from peer');
+                    _this.emit("error", "bad magic number from peer");
                     while (header.readUInt32LE(0) !== magicInt && header.length >= 4) {
                         header = header.slice(1);
                     }
@@ -142,7 +142,7 @@ var Peer = function(options) {
                 var msgChecksum = header.readUInt32LE(20);
                 readFlowingBytes(client, msgLength, lopped, function (payload, lopped) {
                     if (util.sha256d(payload).readUInt32LE(0) !== msgChecksum) {
-                        _this.emit('error', 'bad payload - failed checksum');
+                        _this.emit("error", "bad payload - failed checksum");
                         beginReadingMessage(null);
                         return;
                     }
@@ -168,11 +168,11 @@ var Peer = function(options) {
                 case invCodes.error:
                     break;
                 case invCodes.tx:
-                    var tx = payload.slice(4, 36).toString('hex');
+                    var tx = payload.slice(4, 36).toString("hex");
                     break;
                 case invCodes.block:
-                    var block = payload.slice(4, 36).toString('hex');
-                    _this.emit('blockFound', block);
+                    var block = payload.slice(4, 36).toString("hex");
+                    _this.emit("blockFound", block);
                     break;
             }
             payload = payload.slice(36);
@@ -181,7 +181,7 @@ var Peer = function(options) {
 
     // Handle Peer Messages
     function handleMessage(command, payload) {
-        _this.emit('peerMessage', {command: command, payload: payload});
+        _this.emit("peerMessage", {command: command, payload: payload});
         switch (command) {
             case commands.inv.toString():
                 handleInventory(payload);
@@ -189,7 +189,7 @@ var Peer = function(options) {
             case commands.verack.toString():
                 if(!verack) {
                     verack = true;
-                    _this.emit('connected');
+                    _this.emit("connected");
                 }
                 break;
             case commands.version.toString():
@@ -211,7 +211,7 @@ var Peer = function(options) {
             payload
         ]);
         client.write(message);
-        _this.emit('sentMessage', message);
+        _this.emit("sentMessage", message);
     }
 
     // Broadcast/Send Peer Version
