@@ -1,4 +1,3 @@
-/* jshint esversion: 6 */
 /*
  *
  * Transactions (Updated)
@@ -6,17 +5,17 @@
  */
 
 // Import Required Modules
-var base58 = require('base58-native');
-var bchaddr = require('bchaddrjs');
-var bignum = require('bignum');
-var bitcoin = require('blazepool-utxo-lib');
-var crypto = require('crypto');
+var base58 = require("base58-native");
+var bchaddr = require("bchaddrjs");
+var bignum = require("bignum");
+var bitcoin = require("blazepool-utxo-lib");
+var crypto = require("crypto");
 
 // Hash Address from exAddress + Key
 exports.addressFromEx = function(exAddress, ripdm160Key) {
     try {
         var versionByte = exports.getVersionByte(exAddress);
-        var addrBase = Buffer.concat([versionByte, Buffer.from(ripdm160Key, 'hex')]);
+        var addrBase = Buffer.concat([versionByte, Buffer.from(ripdm160Key, "hex")]);
         var checksum = exports.sha256d(addrBase).slice(0, 4);
         var address = Buffer.concat([addrBase, checksum]);
         return base58.encode(address);
@@ -28,10 +27,10 @@ exports.addressFromEx = function(exAddress, ripdm160Key) {
 
 // Convert Address to Script
 exports.addressToScript = function(network, addr) {
-    if (network.network === 'bch' && bchaddr.isCashAddress(addr)) {
+    if (network.network === "bch" && bchaddr.isCashAddress(addr)) {
         addr = bchaddr.toLegacyAddress(addr);
     }
-    if (typeof network !== 'undefined' && network !== null) {
+    if (typeof network !== "undefined" && network !== null) {
         return bitcoin.address.toOutputScript(addr, network);
     }
     else {
@@ -55,7 +54,7 @@ exports.bignumFromBitsBuffer = function(bitsBuff) {
 
 // Convert Bits into Target Bignum
 exports.bignumFromBitsHex = function(bitsString) {
-    var bitsBuff = Buffer.from(bitsString, 'hex');
+    var bitsBuff = Buffer.from(bitsString, "hex");
     return exports.bignumFromBitsBuffer(bitsBuff);
 };
 
@@ -96,12 +95,12 @@ exports.getVersionByte = function(addr) {
 
 // Generate Hex String from Input Buffer
 exports.hexFromReversedBuffer = function(buffer) {
-    return exports.reverseBuffer(buffer).toString('hex');
+    return exports.reverseBuffer(buffer).toString("hex");
 };
 
 // Convert Mining Key to Script
 exports.miningKeyToScript = function(key) {
-    var keyBuffer = Buffer.from(key, 'hex');
+    var keyBuffer = Buffer.from(key, "hex");
     return Buffer.concat([Buffer.from([0x76, 0xa9, 0x14]), keyBuffer, Buffer.from([0x88, 0xac])]);
 };
 
@@ -151,23 +150,23 @@ exports.packInt64LE = function(num) {
 // Convert Pubkey to Script
 exports.pubkeyToScript = function(key) {
     if (key.length !== 66) {
-        console.error('Invalid pubkey: ' + key);
+        console.error("Invalid pubkey: " + key);
         throw new Error();
     }
     var pubkey = Buffer.alloc(35);
     pubkey[0] = 0x21;
     pubkey[34] = 0xac;
-    Buffer.from(key, 'hex').copy(pubkey, 1);
+    Buffer.from(key, "hex").copy(pubkey, 1);
     return pubkey;
 };
 
 // Range Function
 exports.range = function(start, stop, step) {
-    if (typeof stop === 'undefined') {
+    if (typeof stop === "undefined") {
         stop = start;
         start = 0;
     }
-    if (typeof step === 'undefined') {
+    if (typeof step === "undefined") {
         step = 1;
     }
     if ((step > 0 && start >= stop) || (step < 0 && start <= stop)) {
@@ -199,7 +198,7 @@ exports.reverseByteOrder = function(buff) {
 
 // Reverse Input Buffer + Hex String
 exports.reverseHex = function(hex) {
-    return exports.reverseBuffer(Buffer.from(hex, 'hex')).toString('hex');
+    return exports.reverseBuffer(Buffer.from(hex, "hex")).toString("hex");
 };
 
 // Serialize Height/Date Input
@@ -252,7 +251,7 @@ exports.serializeString = function(s) {
 
 // Hash Input w/ Sha256
 exports.sha256 = function(buffer) {
-    var hash1 = crypto.createHash('sha256');
+    var hash1 = crypto.createHash("sha256");
     hash1.update(buffer);
     return hash1.digest();
 };
@@ -281,7 +280,7 @@ exports.shiftMax256Right = function(shiftRight) {
 
 // Generate Reverse Buffer from Input Hash
 exports.uint256BufferFromHash = function(hex) {
-    var fromHex = Buffer.from(hex, 'hex');
+    var fromHex = Buffer.from(hex, "hex");
     if (fromHex.length != 32) {
         var empty = Buffer.alloc(32);
         empty.fill(0);
