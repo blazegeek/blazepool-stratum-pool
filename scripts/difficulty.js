@@ -5,7 +5,7 @@
  */
 
 // Import Required Modules
-var events = require('events');
+var events = require("events");
 
 // Truncate Integer to Fixed Decimal Places
 function toFixed(num, len) {
@@ -82,7 +82,7 @@ var Difficulty = function(port, difficultyOptions) {
         var timeBuffer;
 
         // Manage Client Submission
-        client.on('submit', function() {
+        client.on("submit", function() {
             var ts = (Date.now() / 1000) | 0;
             if (!lastRtc) {
                 lastRtc = ts - options.retargetTime / 2;
@@ -121,7 +121,7 @@ var Difficulty = function(port, difficultyOptions) {
             }
             var newDiff = toFixed(client.difficulty * ddiff, 8);
             timeBuffer.clear();
-            _this.emit('newDifficulty', client, newDiff);
+            _this.emit("newDifficulty", client, newDiff);
         });
     };
 };
