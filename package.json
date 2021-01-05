@@ -1,53 +1,53 @@
 {
-  "name": "blazepool-stratum-pool",
-  "version": "1.0.0",
-  "description": "High performance Stratum poolserver in Node.js",
-  "keywords": [
-    "stratum",
-    "mining",
-    "pool",
-    "server",
-    "poolserver",
-    "bitcoin",
-    "litecoin",
-    "scrypt"
-  ],
-  "homepage": "https://github.com/blazegeek/blazepool-stratum-pool",
-  "bugs": {
-    "url": "https://github.com/blazegeek/blazepool-stratum-pool/issues"
-  },
-  "license": "GPL-2.0",
-  "author": {
-    "name": "Matthew Little"
-  },
-  "contributors": [
-    {
-      "name": "vekexasia"
-    },
-    {
-      "name": "TheSeven"
-    }
-  ],
-  "main": "scripts/index.js",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/blazegeek/blazepool-stratum-pool.git"
-  },
-  "dependencies": {
-    "async": "1.5.2",
-    "base58-native": "*",
-    "bchaddrjs": "^0.4.9",
-    "bignum": "0.13.1",
-    "blazepool-utxo-lib": "git://github.com/blazegeek/blazepool-utxo-lib.git",
-    "blazepool-equihash": "git://github.com/blazegeek/blazepool-equihash.git",
-    "blazepool-multi-hashing": "git://github.com/blazegeek/blazepool-multi-hashing.git",
-    "promise": "^8.1.0"
-  },
-  "engines": {
-    "node": ">=0.10"
-  },
-  "readmeFilename": "README.md",
-  "_id": "blazepool-stratum-pool@1.0.0",
-  "_resolved": "git://github.com/blazegeek/blazepool-stratum-pool.git",
-  "_from": "blazepool-stratum-pool@git://github.com/blazegeek/blazepool-stratum-pool.git"
+	"name": "blazepool-stratum-pool",
+	"version": "1.0.0",
+	"description": "High performance Stratum poolserver in Node.js",
+	"keywords": [
+		"stratum",
+		"mining",
+		"pool",
+		"server",
+		"poolserver",
+		"bitcoin",
+		"litecoin",
+		"scrypt"
+	],
+	"homepage": "https://github.com/blazegeek/blazepool-stratum-pool",
+	"bugs": {
+		"url": "https://github.com/blazegeek/blazepool-stratum-pool/issues"
+	},
+	"license": "GPL-2.0",
+	"author": {
+		"name": "Matthew Little"
+	},
+	"contributors": [
+		{
+			"name": "vekexasia"
+		},
+		{
+			"name": "TheSeven"
+		}
+	],
+	"main": "scripts/index.js",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/blazegeek/blazepool-stratum-pool.git"
+	},
+	"dependencies": {
+		"async": "1.5.2",
+		"base58-native": "*",
+		"bchaddrjs": "^0.4.9",
+		"bignum": "0.13.1",
+		"blazepool-utxo-lib": "git://github.com/blazegeek/blazepool-utxo-lib.git",
+		"blazepool-equihash": "git://github.com/blazegeek/blazepool-equihash.git",
+		"blazepool-multi-hashing": "git://github.com/blazegeek/blazepool-multi-hashing.git",
+		"promise": "^8.1.0"
+	},
+	"engines": {
+		"node": ">=0.10"
+	},
+	"readmeFilename": "README.md",
+	"_id": "blazepool-stratum-pool@1.0.0",
+	"_resolved": "git://github.com/blazegeek/blazepool-stratum-pool.git",
+	"_from": "blazepool-stratum-pool@git://github.com/blazegeek/blazepool-stratum-pool.git"
 }
