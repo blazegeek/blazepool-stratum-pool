@@ -187,7 +187,7 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 			// Establish Coin Initial Statistics
 			options.initStats = {
 				connections: options.coin.hasGetInfo ? rpcResults.getinfo.connections : rpcResults.getnetworkinfo.connections,
-				difficulty: difficulty * algorithms[options.coin.algorithm].multiplier,
+				difficulty: difficulty * Algorithms[options.coin.algorithm].multiplier,
 				networkHashRate: rpcResults.getmininginfo.networkhashps,
 			};
 
@@ -681,7 +681,7 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 			"Network Connected:\t" + (options.testnet ? "Testnet" : "Mainnet"),
 			"Current Block Height:\t" + _this.manager.currentJob.rpcData.height,
 			"Current Connect Peers:\t" + options.initStats.connections,
-			"Current Block Diff:\t" + _this.manager.currentJob.difficulty * algorithms[options.coin.algorithm].multiplier,
+			"Current Block Diff:\t" + _this.manager.currentJob.difficulty * Algorithms[options.coin.algorithm].multiplier,
 			"Network Difficulty:\t" + options.initStats.difficulty,
 			"Stratum Port(s):\t" + _this.options.initStats.stratumPorts.join(", "),
 			"Pool Fee Percent:\t" + _this.options.feePercent + "%",
