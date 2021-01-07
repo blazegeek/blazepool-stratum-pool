@@ -28,7 +28,7 @@
 			"name": "TheSeven"
 		}
 	],
-	"main": "scripts/index.js",
+	"main": "libs/index.js",
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/blazegeek/blazepool-stratum-pool.git"
