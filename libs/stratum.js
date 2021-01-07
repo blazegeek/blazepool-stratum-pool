@@ -413,7 +413,7 @@ StratumClient.prototype.__proto__ = events.EventEmitter.prototype;
  **/
 
 // Stratum Client Main Function
-var StratumServer = exports.Server = function (options, authorizeFn) {
+var StratumServer = exports.Server = function StratumServer(options, authorizeFn) {
 	// Establish Private Stratum Variables
 	var _this = this;
 	var stratumClients = {};

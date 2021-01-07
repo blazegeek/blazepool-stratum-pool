@@ -83,15 +83,12 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
     });
   };
 
-  /* from original node straum pool
-
+  // from original node stratum pool
   this.getStratumServer = function() {
     return _this.stratumServer;
   };
 	
-	*/
-
-	/* from original node straum pool
+	/* from original node stratum pool
 
 	this.attachMiners = function(miners) {
     miners.forEach(function (clientObj) {
@@ -102,7 +99,7 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 
   */
 
-  /* from original node straum pool
+  /* from original node stratum pool
 
   this.relinquishMiners = function(filterFn, resultCback) {
     var origStratumClients = this.stratumServer.getStratumClients();
@@ -541,13 +538,13 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 		});
 
 		// Establish Failed Connection Functionality
-		_this.peer.on("connectionFailed", function (e) {
+		_this.peer.on("connectionFailed", function (err) {
 			emitErrorLog("p2p connection failed - likely incorrect host or port");
 		});
 
 		// Establish Socket Error Functionality
-		_this.peer.on("socketError", function (e) {
-			emitErrorLog("p2p had a socket error " + JSON.stringify(e));
+		_this.peer.on("socketError", function (err) {
+			emitErrorLog("p2p had a socket error " + JSON.stringify(err));
 		});
 
 		// Establish Error Functionality
