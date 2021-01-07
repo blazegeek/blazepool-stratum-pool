@@ -71,6 +71,18 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 		}
 	};
 
+	// Configure Port Difficulty
+  this.setVarDiff = function(port, varDiffConfig) {
+    if (typeof(_this.varDiff[port]) != "undefined" ) {
+      _this.varDiff[port].removeAllListeners();
+    }
+    var varDiffInstance = new varDiff(port, varDiffConfig);
+    _this.varDiff[port] = varDiffInstance;
+    _this.varDiff[port].on("newDifficulty", function(client, newDiff) {
+	    client.enqueueNextDifficulty(newDiff);
+    });
+  };
+
 	// Initialize Pool Difficulty
 	function setupVarDiff() {
 		_this.varDiff = {};
@@ -680,18 +692,6 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 		emitSpecialLog(infoLines.join("\n\t\t\t\t\t\t"));
 	}
 };
-
-	// Configure Port Difficulty
-	this.setVarDiff = function (port, varDiffConfig) {
-		if (typeof _this.varDiff[port] != "undefined") {
-			_this.varDiff[port].removeAllListeners();
-		}
-		var varDiffInstance = new varDiff(port, varDiffConfig);
-		_this.varDiff[port] = varDiffInstance;
-		_this.varDiff[port].on("newDifficulty", function (client, newDiff) {
-			client.enqueueNextDifficulty(newDiff);
-		});
-	};
 
 //module.exports = Pool;
 Pool.prototype.__proto__ = events.EventEmitter.prototype;
