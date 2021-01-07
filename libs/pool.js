@@ -83,6 +83,55 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
     });
   };
 
+  /* from original node straum pool
+
+  this.getStratumServer = function() {
+    return _this.stratumServer;
+  };
+	
+	*/
+
+	/* from original node straum pool
+
+	this.attachMiners = function(miners) {
+    miners.forEach(function (clientObj) {
+      _this.stratumServer.manuallyAddStratumClient(clientObj);
+    });
+    _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams());
+  };
+
+  */
+
+  /* from original node straum pool
+
+  this.relinquishMiners = function(filterFn, resultCback) {
+    var origStratumClients = this.stratumServer.getStratumClients();
+    var stratumClients = [];
+    Object.keys(origStratumClients).forEach(function (subId) {
+      stratumClients.push({subId: subId, client: origStratumClients[subId]});
+    });
+    async.filter(
+      stratumClients,
+      filterFn,
+      function (clientsToRelinquish) {
+        clientsToRelinquish.forEach(function(cObj) {
+          cObj.client.removeAllListeners();
+          _this.stratumServer.removeStratumClientBySubId(cObj.subId);
+        });
+        process.nextTick(function () {
+        resultCback(
+          clientsToRelinquish.map(
+            function (item) {
+              return item.client;
+            })
+          );
+        });
+      }
+    );
+  };
+
+	*/
+
 	// Initialize Pool Difficulty
 	function setupVarDiff() {
 		_this.varDiff = {};
@@ -515,7 +564,7 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 	// Start Pool Stratum Server
 	function startStratumServer(callback) {
 		// Establish Stratum Server
-		_this.stratumServer = new Stratum.server(options, authorizeFn);
+		_this.stratumServer = new Stratum.Server(options, authorizeFn);
 
 		// Establish Started Functionality
 		_this.stratumServer.on("started", function () {
