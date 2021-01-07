@@ -567,4 +567,4 @@ var StratumServer = exports.Server = function StratumServer(options, authorizeFn
 
 // Export Stratum Client/Server
 //exports.server = StratumServer;
-StratumClient.prototype.__proto__ = events.EventEmitter.prototype;
+StratumServer.prototype.__proto__ = events.EventEmitter.prototype;
