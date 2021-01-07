@@ -85,16 +85,16 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 
   // from original node stratum pool
   this.getStratumServer = function() {
-    return _this.stratumServer;
+    return _this.StratumServer;
   };
 	
 	/* from original node stratum pool
 
 	this.attachMiners = function(miners) {
     miners.forEach(function (clientObj) {
-      _this.stratumServer.manuallyAddStratumClient(clientObj);
+      _this.StratumServer.manuallyAddStratumClient(clientObj);
     });
-    _this.stratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams());
+    _this.StratumServer.broadcastMiningJobs(_this.jobManager.currentJob.getJobParams());
   };
 
   */
@@ -102,7 +102,7 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
   /* from original node stratum pool
 
   this.relinquishMiners = function(filterFn, resultCback) {
-    var origStratumClients = this.stratumServer.getStratumClients();
+    var origStratumClients = this.StratumServer.getStratumClients();
     var stratumClients = [];
     Object.keys(origStratumClients).forEach(function (subId) {
       stratumClients.push({subId: subId, client: origStratumClients[subId]});
@@ -113,7 +113,7 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
       function (clientsToRelinquish) {
         clientsToRelinquish.forEach(function(cObj) {
           cObj.client.removeAllListeners();
-          _this.stratumServer.removeStratumClientBySubId(cObj.subId);
+          _this.StratumServer.removeStratumClientBySubId(cObj.subId);
         });
         process.nextTick(function () {
         resultCback(
@@ -366,8 +366,8 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 
 		// Establish New Block Functionality
 		_this.manager.on("newBlock", function (blockTemplate) {
-			if (_this.stratumServer) {
-				_this.stratumServer.broadcastMiningJobs(blockTemplate.getJobParams(options));
+			if (_this.StratumServer) {
+				_this.StratumServer.broadcastMiningJobs(blockTemplate.getJobParams(options));
 			}
 		});
 
@@ -400,10 +400,10 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 
 		// Establish Updated Block Functionality
 		_this.manager.on("updatedBlock", function (blockTemplate) {
-			if (_this.stratumServer) {
+			if (_this.StratumServer) {
 				var job = blockTemplate.getJobParams(options);
 				job[8] = false;
-				_this.stratumServer.broadcastMiningJobs(job);
+				_this.StratumServer.broadcastMiningJobs(job);
 			}
 		});
 	}
@@ -561,21 +561,21 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 	// Start Pool Stratum Server
 	function startStratumServer(callback) {
 		// Establish Stratum Server
-		_this.stratumServer = new Stratum.Server(options, authorizeFn);
+		_this.StratumServer = new StratumServer.Server(options, authorizeFn);
 
 		// Establish Started Functionality
-		_this.stratumServer.on("started", function () {
+		_this.StratumServer.on("started", function () {
 			var stratumPorts = Object.keys(options.ports);
 			stratumPorts = stratumPorts.filter(function (port) {
 				return options.ports[port].enabled === true;
 			});
 			options.initStats.stratumPorts = stratumPorts;
-			_this.stratumServer.broadcastMiningJobs(_this.manager.currentJob.getJobParams(options));
+			_this.StratumServer.broadcastMiningJobs(_this.manager.currentJob.getJobParams(options));
 			callback();
 		});
 
 		// Establish Timeout Functionality
-		_this.stratumServer.on("broadcastTimeout", function () {
+		_this.StratumServer.on("broadcastTimeout", function () {
 			if (options.debug) {
 				emitLog("No new blocks for " + options.jobRebroadcastTimeout + " seconds - updating transactions & rebroadcasting work");
 			}
@@ -587,7 +587,7 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 		});
 
 		// Establish New Connection Functionality
-		_this.stratumServer.on("client.connected", function (client) {
+		_this.StratumServer.on("client.connected", function (client) {
 			// Manage/Record Client Difficulty
 			if (typeof _this.varDiff[client.socket.localPort] !== "undefined") {
 				_this.varDiff[client.socket.localPort].manageClient(client);
