@@ -83,11 +83,13 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
     });
   };
 
+  /*
   // from original node stratum pool
   this.getStratumServer = function() {
     return _this.StratumServer;
   };
-	
+	*/	
+
 	/* from original node stratum pool
 
 	this.attachMiners = function(miners) {
@@ -366,8 +368,8 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 
 		// Establish New Block Functionality
 		_this.manager.on("newBlock", function (blockTemplate) {
-			if (_this.StratumServer) {
-				_this.StratumServer.broadcastMiningJobs(blockTemplate.getJobParams(options));
+			if (_this.stratumServer) {
+				_this.stratumServer.broadcastMiningJobs(blockTemplate.getJobParams(options));
 			}
 		});
 
@@ -400,10 +402,10 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 
 		// Establish Updated Block Functionality
 		_this.manager.on("updatedBlock", function (blockTemplate) {
-			if (_this.StratumServer) {
+			if (_this.stratumServer) {
 				var job = blockTemplate.getJobParams(options);
 				job[8] = false;
-				_this.StratumServer.broadcastMiningJobs(job);
+				_this.stratumServer.broadcastMiningJobs(job);
 			}
 		});
 	}
@@ -561,21 +563,21 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 	// Start Pool Stratum Server
 	function startStratumServer(callback) {
 		// Establish Stratum Server
-		_this.StratumServer = new StratumServer.Server(options, authorizeFn);
+		_this.stratumServer = new Stratum.server(options, authorizeFn);
 
 		// Establish Started Functionality
-		_this.StratumServer.on("started", function () {
+		_this.stratumServer.on("started", function () {
 			var stratumPorts = Object.keys(options.ports);
 			stratumPorts = stratumPorts.filter(function (port) {
 				return options.ports[port].enabled === true;
 			});
 			options.initStats.stratumPorts = stratumPorts;
-			_this.StratumServer.broadcastMiningJobs(_this.manager.currentJob.getJobParams(options));
+			_this.stratumServer.broadcastMiningJobs(_this.manager.currentJob.getJobParams(options));
 			callback();
 		});
 
 		// Establish Timeout Functionality
-		_this.StratumServer.on("broadcastTimeout", function () {
+		_this.stratumServer.on("broadcastTimeout", function () {
 			if (options.debug) {
 				emitLog("No new blocks for " + options.jobRebroadcastTimeout + " seconds - updating transactions & rebroadcasting work");
 			}
@@ -587,7 +589,7 @@ var Pool = module.exports = function Pool(options, authorizeFn) {
 		});
 
 		// Establish New Connection Functionality
-		_this.StratumServer.on("client.connected", function (client) {
+		_this.stratumServer.on("client.connected", function (client) {
 			// Manage/Record Client Difficulty
 			if (typeof _this.varDiff[client.socket.localPort] !== "undefined") {
 				_this.varDiff[client.socket.localPort].manageClient(client);
