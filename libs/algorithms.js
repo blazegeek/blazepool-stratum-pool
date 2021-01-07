@@ -9,7 +9,7 @@ var Util = require("./util.js");
 var diff1 = (global.diff1 = 0x00000000ffff0000000000000000000000000000000000000000000000000000);
 
 // Algorithms Main Function
-var Algorithms = module.exports = global.Algorithms{
+var Algorithms = module.exports = global.Algorithms = {
 	// Sha256 Algorithm
 	"sha256": {
 		"hash": function () {
