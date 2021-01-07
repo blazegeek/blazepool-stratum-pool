@@ -1,4 +1,4 @@
-/* Transactions (Updated) */
+/* Utils (Updated) */
 
 // Import Required Modules
 var base58 = require("base58-native");
@@ -257,19 +257,20 @@ exports.uint256BufferFromHash = function (hex) {
 
 // Generate VarInt Buffer
 exports.varIntBuffer = function (n) {
+	var buff;
 	if (n < 0xfd) return Buffer.from([n]);
 	else if (n <= 0xffff) {
-		var buff = Buffer.alloc(3);
+		buff = Buffer.alloc(3);
 		buff[0] = 0xfd;
 		buff.writeUInt16LE(n, 1);
 		return buff;
 	} else if (n <= 0xffffffff) {
-		var buff = Buffer.alloc(5);
+		buff = Buffer.alloc(5);
 		buff[0] = 0xfe;
 		buff.writeUInt32LE(n, 1);
 		return buff;
 	} else {
-		var buff = Buffer.alloc(9);
+		buff = Buffer.alloc(9);
 		buff[0] = 0xff;
 		exports.packUInt16LE(n).copy(buff, 1);
 		return buff;

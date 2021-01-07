@@ -3,17 +3,17 @@
 // Import Required Modules
 var async = require("async");
 var crypto = require("crypto");
-var util = require("./util.js");
+var Util = require("./util.js");
 
 // Import Promise Module
 var promise = require("promise");
 
 // Merkle Main Function
-var Merkle = function (data) {
+var Merkle = module.exports = function Merkle(data) {
 	// Concat Hashes Together
 	function concatHash(h1, h2) {
 		var joined = Buffer.concat([h1, h2]);
-		var dhashed = util.sha256d(joined);
+		var dhashed = Util.sha256d(joined);
 		return dhashed;
 	}
 
@@ -52,7 +52,7 @@ var Merkle = function (data) {
 					steps.push(L[1]);
 					if (Ll % 2) L.push(L[L.length - 1]);
 					var Ld = [];
-					var r = util.range(StartL, Ll, 2);
+					var r = Util.range(StartL, Ll, 2);
 					r.forEach(function (i) {
 						Ld.push(concatHash(L[i], L[i + 1]));
 					});
@@ -136,7 +136,7 @@ var Merkle = function (data) {
 
 	// Get Merkle Root
 	function getRoot(rpcData, generateTxRaw) {
-		hashes = [util.reverseBuffer(Buffer.from(generateTxRaw, "hex")).toString("hex")];
+		hashes = [Util.reverseBuffer(Buffer.from(generateTxRaw, "hex")).toString("hex")];
 		rpcData.transactions.forEach(function (value) {
 			if (value.txid !== undefined) {
 				hashes.push(value.txid);
@@ -154,7 +154,7 @@ var Merkle = function (data) {
 	// Hash Merkle Steps With Input
 	function withFirst(hash) {
 		this.steps.forEach(function (step) {
-			hash = util.sha256d(Buffer.concat([hash, step]));
+			hash = Util.sha256d(Buffer.concat([hash, step]));
 		});
 		return hash;
 	}
@@ -167,4 +167,4 @@ var Merkle = function (data) {
 };
 
 // Export Merkle
-module.exports = Merkle;
+//module.exports = Merkle;

@@ -1,8 +1,9 @@
+/* jshint esversion: 6 */
 /* Daemon (Updated) */
 
 // Import Required Modules
-var http = require("http");
 var cp = require("child_process");
+var http = require("http");
 var events = require("events");
 var async = require("async");
 
@@ -16,7 +17,7 @@ var async = require("async");
  **/
 
 // DaemonInterface Main Function
-var DaemonInterface = function (daemons, logger) {
+function DaemonInterface(daemons, logger) {
 	// Establish Private Daemon Variables
 	var _this = this;
 	logger =
@@ -25,29 +26,14 @@ var DaemonInterface = function (daemons, logger) {
 			console.log(severity + ": " + message);
 		};
 
-	// Check if All Daemons are Online
-	function isOnline(callback) {
-		cmd("getpeerinfo", [], function (results) {
-			var allOnline = results.every(function (result) {
-				return !results.error;
-			});
-			callback(allOnline);
-			if (!allOnline) {
-				_this.emit("connectionFailed", results);
-			}
-		});
-	}
-
 	// Index Daemons from Parameter
-	function indexDaemons() {
+	// Establish Instances
+	var instances = (function () {
 		for (var i = 0; i < daemons.length; i++) {
 			daemons[i].index = i;
 		}
 		return daemons;
-	}
-
-	// Establish Instances
-	var instances = indexDaemons();
+	})();
 
 	// Initialize Daemons
 	function initDaemons() {
@@ -58,32 +44,45 @@ var DaemonInterface = function (daemons, logger) {
 		});
 	}
 
+	// Check if All Daemons are Online
+	function isOnline(callback) {
+		cmd("getnetworkinfo", [], function (results) {
+			var allOnline = results.every(function (result) {
+				return !results.error;
+			});
+			callback(allOnline);
+			if (!allOnline) {
+				_this.emit("connectionFailed", results);
+			}
+		});
+	}
+
 	// Configure Daemon HTTP Requests
-	function performHttpRequest(instance, jsonData, callback) {
+	function requestHTTP(instance, jsonData, callback) {
 		// Establish HTTP Options
 		var options = {
-			hostname: typeof instance.host === "undefined" ? "127.0.0.1" : instance.host,
-			port: instance.port,
-			method: "POST",
-			auth: instance.user + ":" + instance.password,
-			headers: {
+			"hostname": typeof instance.host === "undefined" ? "127.0.0.1" : instance.host,
+			"port": instance.port,
+			"method": "POST",
+			"auth": instance.user + ":" + instance.password,
+			"headers": {
 				"Content-Length": jsonData.length,
 			},
 		};
 
 		// Attempt to Parse JSON from Response
-		var parseJson = function (res, data) {
-			var dataJson;
+		var parseJSON = function (res, data) {
+			var dataJSON;
 			if (res.statusCode === 401 || res.statusCode === 403) {
 				logger("error", "Unauthorized RPC access - invalid RPC username or password");
 				return;
 			}
 			try {
-				dataJson = JSON.parse(data);
+				dataJSON = JSON.parse(data);
 			} catch (e) {
 				if (data.indexOf(":-nan") !== -1) {
 					data = data.replace(/:-nan,/g, ":0");
-					parseJson(res, data);
+					parseJSON(res, data);
 					return;
 				}
 				logger(
@@ -91,8 +90,8 @@ var DaemonInterface = function (daemons, logger) {
 					"Could not parse RPC data from daemon instance  " + instance.index + "\nRequest Data: " + jsonData + "\nReponse Data: " + data
 				);
 			}
-			if (dataJson) {
-				callback(dataJson.error, dataJson, data);
+			if (dataJSON) {
+				callback(dataJSON.error, dataJSON, data);
 			}
 		};
 
@@ -104,14 +103,29 @@ var DaemonInterface = function (daemons, logger) {
 				data += chunk;
 			});
 			res.on("end", function () {
-				parseJson(res, data);
+				parseJSON(res, data);
 			});
 		});
 
 		// Configure Error Behavior
-		req.on("error", function (e) {
-			if (e.code === "ECONNREFUSED") callback({ type: "offline", message: e.message }, null);
-			else callback({ type: "request error", message: e.message }, null);
+		req.on("error", function (err) {
+			if (err.code === "ECONNREFUSED") {
+				callback(
+					{
+						"type": "offline",
+						"message": err.message,
+					},
+					null
+				);
+			} else {
+				callback(
+					{
+						"type": "request error",
+						"message": err.message,
+					},
+					null
+				);
+			}
 		});
 
 		// Return JSON Output
@@ -120,16 +134,16 @@ var DaemonInterface = function (daemons, logger) {
 
 	// Batch RPC Commands
 	function batchCmd(cmdArray, callback) {
-		var requestJson = [];
+		var requestJSON = [];
 		for (var i = 0; i < cmdArray.length; i++) {
-			requestJson.push({
-				method: cmdArray[i][0],
-				params: cmdArray[i][1],
-				id: Date.now() + Math.floor(Math.random() * 10) + i,
+			requestJSON.push({
+				"method": cmdArray[i][0],
+				"params": cmdArray[i][1],
+				"id": Date.now() + Math.floor(Math.random() * 10) + i,
 			});
 		}
-		var serializedRequest = JSON.stringify(requestJson);
-		performHttpRequest(instances[0], serializedRequest, function (error, result) {
+		var serializedRequest = JSON.stringify(requestJSON);
+		requestHTTP(instances[0], serializedRequest, function (error, result) {
 			callback(error, result);
 		});
 	}
@@ -142,22 +156,29 @@ var DaemonInterface = function (daemons, logger) {
 			function (instance, eachCallback) {
 				var itemFinished = function (error, result, data) {
 					var returnObj = {
-						error: error,
-						response: (result || {}).result,
-						instance: instance,
+						"error": error,
+						"response": (result || {}).result,
+						"instance": instance,
 					};
-					if (returnRawData) returnObj.data = data;
-					if (streamResults) callback(returnObj);
-					else results.push(returnObj);
+					if (returnRawData) {
+						returnObj.data = data;
+					}
+					if (streamResults) {
+						callback(returnObj);
+					} else {
+						results.push(returnObj);
+					}
 					eachCallback();
 					itemFinished = function () {};
 				};
-				var requestJson = JSON.stringify({
-					method: method,
-					params: params,
-					id: Date.now() + Math.floor(Math.random() * 10),
+
+				var requestJSON = JSON.stringify({
+					"method": method,
+					"params": params,
+					"id": Date.now() + Math.floor(Math.random() * 10),
 				});
-				performHttpRequest(instance, requestJson, function (error, result, data) {
+
+				requestHTTP(instance, requestJSON, function (error, result, data) {
 					itemFinished(error, result, data);
 				});
 			},
@@ -174,7 +195,7 @@ var DaemonInterface = function (daemons, logger) {
 	this.isOnline = isOnline;
 	this.cmd = cmd;
 	this.batchCmd = batchCmd;
-};
+}
 
-exports.interface = DaemonInterface;
 DaemonInterface.prototype.__proto__ = events.EventEmitter.prototype;
+exports.interface = DaemonInterface;

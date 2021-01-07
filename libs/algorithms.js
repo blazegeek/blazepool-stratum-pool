@@ -3,26 +3,26 @@
 // Import Required Modules
 var ev = require("blazepool-equihash");
 var multiHashing = require("blazepool-multi-hashing");
-var util = require("./util.js");
+var Util = require("./util.js");
 
-// Global Difficulty
+// Global Difficulty *** defined but never used ***
 var diff1 = (global.diff1 = 0x00000000ffff0000000000000000000000000000000000000000000000000000);
 
 // Algorithms Main Function
-var algorithms = {
+var Algorithms = module.exports = global.Algorithms{
 	// Sha256 Algorithm
-	sha256: {
-		hash: function () {
+	"sha256": {
+		"hash": function () {
 			return function () {
-				return util.sha256d.apply(this, arguments);
+				return Util.sha256d.apply(this, arguments);
 			};
 		},
 	},
 
 	// Scrypt Algorithm
-	scrypt: {
-		multiplier: Math.pow(2, 16),
-		hash: function (coinConfig) {
+	"scrypt": {
+		"multiplier": Math.pow(2, 16),
+		"hash": function (coinConfig) {
 			var nValue = coinConfig.nValue || 1024;
 			var rValue = coinConfig.rValue || 1;
 			return function (data) {
@@ -33,8 +33,8 @@ var algorithms = {
 
 	// Scrypt-OG Algorithm
 	"scrypt-og": {
-		multiplier: Math.pow(2, 16),
-		hash: function (coinConfig) {
+		"multiplier": Math.pow(2, 16),
+		"hash": function (coinConfig) {
 			var nValue = coinConfig.nValue || 64;
 			var rValue = coinConfig.rValue || 1;
 			return function (data) {
@@ -45,8 +45,8 @@ var algorithms = {
 
 	// Scrypt-Jane Algorithm
 	"scrypt-jane": {
-		multiplier: Math.pow(2, 16),
-		hash: function (coinConfig) {
+		"multiplier": Math.pow(2, 16),
+		"hash": function (coinConfig) {
 			var nTimestamp = coinConfig.chainStartTime || 1367991200;
 			var nMin = coinConfig.nMin || 4;
 			var nMax = coinConfig.nMax || 30;
@@ -58,18 +58,18 @@ var algorithms = {
 
 	// Scrypt-N Algorithm
 	"scrypt-n": {
-		multiplier: Math.pow(2, 16),
-		hash: function (coinConfig) {
+		"multiplier": Math.pow(2, 16),
+		"hash": function (coinConfig) {
 			var timeTable = coinConfig.timeTable || {
-				2048: 1389306217,
-				4096: 1456415081,
-				8192: 1506746729,
-				16384: 1557078377,
-				32768: 1657741673,
-				65536: 1859068265,
-				131072: 2060394857,
-				262144: 1722307603,
-				524288: 1769642992,
+				"2048": 1389306217,
+				"4096": 1456415081,
+				"8192": 1506746729,
+				"16384": 1557078377,
+				"32768": 1657741673,
+				"65536": 1859068265,
+				"131072": 2060394857,
+				"262144": 1722307603,
+				"524288": 1769642992,
 			};
 			var nFactor = (function () {
 				var n = Object.keys(timeTable)
@@ -88,8 +88,8 @@ var algorithms = {
 	},
 
 	// Geek Algorithm
-	geek: {
-		hash: function () {
+	"geek": {
+		"hash": function () {
 			return function () {
 				return multiHashing.geek.apply(this, arguments);
 			};
@@ -97,8 +97,8 @@ var algorithms = {
 	},
 
 	// Sha-1 Algorithm
-	sha1: {
-		hash: function () {
+	"sha1": {
+		"hash": function () {
 			return function () {
 				return multiHashing.sha1.apply(this, arguments);
 			};
@@ -106,8 +106,8 @@ var algorithms = {
 	},
 
 	// C11 Algorithm
-	c11: {
-		hash: function () {
+	"c11": {
+		"hash": function () {
 			return function () {
 				return multiHashing.c11.apply(this, arguments);
 			};
@@ -115,8 +115,8 @@ var algorithms = {
 	},
 
 	// X11 Algorithm
-	x11: {
-		hash: function () {
+	"x11": {
+		"hash": function () {
 			return function () {
 				return multiHashing.x11.apply(this, arguments);
 			};
@@ -124,8 +124,8 @@ var algorithms = {
 	},
 
 	// X13 Algorithm
-	x13: {
-		hash: function () {
+	"x13": {
+		"hash": function () {
 			return function () {
 				return multiHashing.x13.apply(this, arguments);
 			};
@@ -133,8 +133,8 @@ var algorithms = {
 	},
 
 	// X15 Algorithm
-	x15: {
-		hash: function () {
+	"x15": {
+		"hash": function () {
 			return function () {
 				return multiHashing.x15.apply(this, arguments);
 			};
@@ -142,9 +142,9 @@ var algorithms = {
 	},
 
 	// X16R Algorithm
-	x16r: {
-		multiplier: Math.pow(2, 8),
-		hash: function () {
+	"x16r": {
+		"multiplier": Math.pow(2, 8),
+		"hash": function () {
 			return function () {
 				return multiHashing.x16r.apply(this, arguments);
 			};
@@ -152,9 +152,9 @@ var algorithms = {
 	},
 
 	// X16Rv2 Algorithm
-	x16rv2: {
-		multiplier: Math.pow(2, 8),
-		hash: function () {
+	"x16rv2": {
+		"multiplier": Math.pow(2, 8),
+		"hash": function () {
 			return function () {
 				return multiHashing.x16rv2.apply(this, arguments);
 			};
@@ -162,8 +162,8 @@ var algorithms = {
 	},
 
 	// Nist5 Algorithm
-	nist5: {
-		hash: function () {
+	"nist5": {
+		"hash": function () {
 			return function () {
 				return multiHashing.nist5.apply(this, arguments);
 			};
@@ -171,8 +171,8 @@ var algorithms = {
 	},
 
 	// Quark Algorithm
-	quark: {
-		hash: function () {
+	"quark": {
+		"hash": function () {
 			return function () {
 				return multiHashing.quark.apply(this, arguments);
 			};
@@ -180,9 +180,9 @@ var algorithms = {
 	},
 
 	// Keccak Algorithm
-	keccak: {
-		multiplier: Math.pow(2, 8),
-		hash: function (coinConfig) {
+	"keccak": {
+		"multiplier": Math.pow(2, 8),
+		"hash": function (coinConfig) {
 			if (coinConfig.normalHashing === true) {
 				return function (data, nTimeInt) {
 					return multiHashing.keccak(multiHashing.keccak(Buffer.concat([data, Buffer.from(nTimeInt.toString(16), "hex")])));
@@ -196,9 +196,9 @@ var algorithms = {
 	},
 
 	// Blake Algorithm
-	blake: {
-		multiplier: Math.pow(2, 8),
-		hash: function () {
+	"blake": {
+		"multiplier": Math.pow(2, 8),
+		"hash": function () {
 			return function () {
 				return multiHashing.blake.apply(this, arguments);
 			};
@@ -206,9 +206,9 @@ var algorithms = {
 	},
 
 	// Neoscrypt Algorithm
-	neoscrypt: {
-		multiplier: Math.pow(2, 5),
-		hash: function () {
+	"neoscrypt": {
+		"multiplier": Math.pow(2, 5),
+		"hash": function () {
 			return function () {
 				return multiHashing.neoscrypt.apply(this, arguments);
 			};
@@ -216,8 +216,8 @@ var algorithms = {
 	},
 
 	// Skein Algorithm
-	skein: {
-		hash: function () {
+	"skein": {
+		"hash": function () {
 			return function () {
 				return multiHashing.skein.apply(this, arguments);
 			};
@@ -225,9 +225,9 @@ var algorithms = {
 	},
 
 	// Groestl Algorithm
-	groestl: {
-		multiplier: Math.pow(2, 8),
-		hash: function () {
+	"groestl": {
+		"multiplier": Math.pow(2, 8),
+		"hash": function () {
 			return function () {
 				return multiHashing.groestl.apply(this, arguments);
 			};
@@ -235,9 +235,9 @@ var algorithms = {
 	},
 
 	// Fugue Algorithm
-	fugue: {
-		multiplier: Math.pow(2, 8),
-		hash: function () {
+	"fugue": {
+		"multiplier": Math.pow(2, 8),
+		"hash": function () {
 			return function () {
 				return multiHashing.fugue.apply(this, arguments);
 			};
@@ -245,8 +245,8 @@ var algorithms = {
 	},
 
 	// Shavite-3 Algorithm
-	shavite3: {
-		hash: function () {
+	"shavite3": {
+		"hash": function () {
 			return function () {
 				return multiHashing.shavite3.apply(this, arguments);
 			};
@@ -254,8 +254,8 @@ var algorithms = {
 	},
 
 	// Hefty-1 Algorithm
-	hefty1: {
-		hash: function () {
+	"hefty1": {
+		"hash": function () {
 			return function () {
 				return multiHashing.hefty1.apply(this, arguments);
 			};
@@ -263,8 +263,8 @@ var algorithms = {
 	},
 
 	// Qubit Algorithm
-	qubit: {
-		hash: function () {
+	"qubit": {
+		"hash": function () {
 			return function () {
 				return multiHashing.qubit.apply(this, arguments);
 			};
@@ -272,16 +272,16 @@ var algorithms = {
 	},
 
 	// Equihash Algorithm
-	equihash: {
-		multiplier: 1,
-		diff: parseInt("0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"),
-		hash: function (coinConfig) {
+	"equihash": {
+		"multiplier": 1,
+		"diff": parseInt("0x0007ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"),
+		"hash": function (coinConfig) {
 			var parameters = coinConfig.parameters;
 			if (!parameters) {
 				parameters = {
-					N: 200,
-					K: 9,
-					personalization: "ZcashPoW",
+					"N": 200,
+					"K": 9,
+					"personalization": "ZcashPoW",
 				};
 			}
 			var N = parameters.N || 200;
@@ -295,12 +295,12 @@ var algorithms = {
 };
 
 // Set Default Multiplier
-for (var algo in algorithms) {
-	if (!algorithms[algo].multiplier) {
-		algorithms[algo].multiplier = 1;
+for (var algo in Algorithms) {
+	if (!Algorithms[algo].multiplier) {
+		Algorithms[algo].multiplier = 1;
 	}
 }
 
 // Export Algorithms
-module.exports = algorithms;
-global.algorithms = algorithms;
+//module.exports = Algorithms;
+//global.Algorithms = Algorithms;

@@ -3,7 +3,7 @@
 // Import Required Modules
 var net = require("net");
 var events = require("events");
-var util = require("./util.js");
+var Util = require("./util.js");
 
 // Increment Count for Each Subscription
 var SubscriptionCounter = function () {
@@ -13,7 +13,7 @@ var SubscriptionCounter = function () {
 		next: function () {
 			count++;
 			if (Number.MAX_VALUE === count) count = 0;
-			return padding + util.packInt64LE(count).toString("hex");
+			return padding + Util.packInt64LE(count).toString("hex");
 		},
 	};
 };
@@ -37,7 +37,13 @@ var StratumClient = function (options) {
 	this.lastActivity = Date.now();
 	this.socket = options.socket;
 	this.remoteAddress = options.socket.remoteAddress;
-	this.shares = { valid: 0, invalid: 0 };
+	this.shares = {
+		"valid": 0,
+		"invalid": 0,
+	};
+
+	// Determine Whether to Consider Banning
+	var considerBan = !banning || !banning.enabled ? banningDisabled : banningEnabled;
 
 	// Helper Function if Banning is Disabled
 	function banningDisabled() {
@@ -55,7 +61,7 @@ var StratumClient = function (options) {
 		if (totalShares >= banning.checkThreshold) {
 			var percentBad = (_this.shares.invalid / totalShares) * 100;
 			if (percentBad < banning.invalidPercent) {
-				this.shares = { valid: 0, invalid: 0 };
+				this.shares = {valid: 0, invalid: 0};
 			} else {
 				_this.emit("triggerBan", _this.shares.invalid + " out of the last " + totalShares + " shares were invalid");
 				_this.socket.destroy();
@@ -64,9 +70,6 @@ var StratumClient = function (options) {
 		}
 		return false;
 	}
-
-	// Determine Whether to Consider Banning
-	var considerBan = !banning || !banning.enabled ? banningDisabled : banningEnabled;
 
 	// Initialize Stratum Connection
 	function initializeClient() {
@@ -130,8 +133,8 @@ var StratumClient = function (options) {
 		});
 
 		// Manage Stratum Error Functionality
-		socket.on("error", function (e) {
-			if (e.code !== "ECONNRESET") _this.emit("socketError", err);
+		socket.on("error", function (err) {
+			if (err.code !== "ECONNRESET") _this.emit("socketError", err);
 		});
 	}
 
@@ -157,18 +160,18 @@ var StratumClient = function (options) {
 			// Manage Transactions
 			case "mining.get_transactions":
 				sendJson({
-					id: null,
-					result: [],
-					error: true,
+					"id": null,
+					"result": [],
+					"error": true,
 				});
 				break;
 
 			// Manage Extranonce Capabilities
 			case "mining.extranonce.subscribe":
 				sendJson({
-					id: message.id,
-					result: false,
-					error: [20, "Not supported.", null],
+					"id": message.id,
+					"result": false,
+					"error": [20, "Not supported.", null],
 				});
 				break;
 
@@ -190,35 +193,35 @@ var StratumClient = function (options) {
 				_this.emit("subscription", {}, function (error, extraNonce1, extraNonce1) {
 					if (error) {
 						sendJson({
-							id: message.id,
-							result: null,
-							error: error,
+							"id": message.id,
+							"result": null,
+							"error": error,
 						});
 						return;
 					}
 					_this.extraNonce1 = extraNonce1;
 					sendJson({
-						id: message.id,
-						result: [null, extraNonce1],
-						error: null,
+						"id": message.id,
+						"result": [null, extraNonce1],
+						"error": null,
 					});
 				});
-
+				break;
 			// Default Subscription Handling
 			default:
 				_this.emit("subscription", {}, function (error, extraNonce1, extraNonce2Size) {
 					if (error) {
 						sendJson({
-							id: message.id,
-							result: null,
-							error: error,
+							"id": message.id,
+							"result": null,
+							"error": error,
 						});
 						return;
 					}
 					_this.extraNonce1 = extraNonce1;
 					sendJson({
-						id: message.id,
-						result: [
+						"id": message.id,
+						"result": [
 							[
 								["mining.set_difficulty", options.subscriptionId],
 								["mining.notify", options.subscriptionId],
@@ -226,7 +229,7 @@ var StratumClient = function (options) {
 							extraNonce1,
 							extraNonce2Size,
 						],
-						error: null,
+						"error": null,
 					});
 				});
 		}
@@ -240,9 +243,9 @@ var StratumClient = function (options) {
 			_this.authorized = !result.error && result.authorized;
 			if (replyToSocket) {
 				sendJson({
-					id: message.id,
-					result: _this.authorized,
-					error: result.error,
+					"id": message.id,
+					"result": _this.authorized,
+					"error": result.error,
 				});
 			}
 			if (result.disconnect === true) {
@@ -255,28 +258,49 @@ var StratumClient = function (options) {
 	function handleSubmit(message) {
 		if (!_this.authorized) {
 			sendJson({
-				id: message.id,
-				result: null,
-				error: [24, "unauthorized worker", null],
+				"id": message.id,
+				"result": null,
+				"error": [24, "unauthorized worker", null],
 			});
 			considerBan(false);
 			return;
 		}
 		if (!_this.extraNonce1) {
 			sendJson({
-				id: message.id,
-				result: null,
-				error: [25, "not subscribed", null],
+				"id": message.id,
+				"result": null,
+				"error": [25, "not subscribed", null],
 			});
 			considerBan(false);
 			return;
 		}
+		/* CODE FROM ORIGINAL STRATUM POOL
+        _this.emit('submit',
+            {
+                name        : message.params[0],
+                jobId       : message.params[1],
+                extraNonce2 : message.params[2],
+                nTime       : message.params[3],
+                nonce       : message.params[4]
+            },
+            function(error, result){
+                if (!considerBan(result)){
+                    sendJson({
+                        id: message.id,
+                        result: result,
+                        error: error
+                    });
+                }
+            }
+        );
+       
+		*/
 		_this.emit("submit", message, function (error, result) {
 			if (!considerBan(result)) {
 				sendJson({
-					id: message.id,
-					result: result,
-					error: error,
+					"id": message.id,
+					"result": result,
+					"error": error,
 				});
 			}
 		});
@@ -311,7 +335,7 @@ var StratumClient = function (options) {
 				_this.previousDifficulty = _this.difficulty;
 				_this.difficulty = difficulty;
 				var zeroPad;
-				var powLimit = algorithms.equihash.diff;
+				var powLimit = Algorithms.equihash.diff;
 				var adjPow = powLimit / difficulty;
 				if (64 - adjPow.toString(16).length === 0) {
 					zeroPad = "";
@@ -321,21 +345,20 @@ var StratumClient = function (options) {
 				}
 				var target = (zeroPad + adjPow.toString(16)).substr(0, 64);
 				sendJson({
-					id: null,
-					method: "mining.set_target",
-					params: [target],
+					"id": null,
+					"method": "mining.set_target",
+					"params": [target],
 				});
 				return true;
-
 			// Default Difficulty Handling
 			default:
 				if (difficulty === this.difficulty) return false;
 				_this.previousDifficulty = _this.difficulty;
 				_this.difficulty = difficulty;
 				sendJson({
-					id: null,
-					method: "mining.set_difficulty",
-					params: [difficulty],
+					"id": null,
+					"method": "mining.set_difficulty",
+					"params": [difficulty],
 				});
 				return true;
 		}
@@ -357,15 +380,15 @@ var StratumClient = function (options) {
 			}
 		}
 		sendJson({
-			id: null,
-			method: "mining.notify",
-			params: jobParams,
+			"id": null,
+			"method": "mining.notify",
+			"params": jobParams,
 		});
 	};
 
 	// Manually Authorize Stratum Client
 	this.manuallyAuthClient = function (username, password) {
-		handleAuthorize({ id: 1, params: [username, password] }, false);
+		handleAuthorize({id: 1, params: [username, password]}, false);
 	};
 
 	// Manually Copy Values from Stratum Client
@@ -379,6 +402,8 @@ var StratumClient = function (options) {
 	this.init = initializeClient;
 };
 
+StratumClient.prototype.__proto__ = events.EventEmitter.prototype;
+
 /**
  * The actual stratum server.
  * It emits the following Events:
@@ -388,7 +413,7 @@ var StratumClient = function (options) {
  **/
 
 // Stratum Client Main Function
-var StratumServer = function (options, authorizeFn) {
+var StratumServer = exports.Server = function (options, authorizeFn) {
 	// Establish Private Stratum Variables
 	var _this = this;
 	var stratumClients = {};
@@ -422,7 +447,9 @@ var StratumServer = function (options, authorizeFn) {
 			setInterval(function () {
 				for (var ip in bannedIPs) {
 					var banTime = bannedIPs[ip];
-					if (Date.now() - banTime > options.banning.time) delete bannedIPs[ip];
+					if (Date.now() - banTime > options.banning.time) {
+						delete bannedIPs[ip];
+					}
 				}
 			}, 1000 * options.banning.purgeInterval);
 		}
@@ -434,10 +461,23 @@ var StratumServer = function (options, authorizeFn) {
 			return options.ports[port].enabled === true;
 		});
 
+		/* FROM ORIGINAL STRATUM POOL CODE
+        //SetupBroadcasting();
+        var serversStarted = 0;
+        Object.keys(options.ports).forEach(function(port){
+            net.createServer({allowHalfOpen: false}, function(socket) {
+                _this.handleNewClient(socket);
+            }).listen(parseInt(port), function() {
+                serversStarted++;
+                if (serversStarted == Object.keys(options.ports).length)
+                    _this.emit('started');
+            });
+        });
+    		*/
 		// Start Individual Stratum Servers
 		stratumPorts.forEach(function (port) {
 			net
-				.createServer({ allowHalfOpen: false }, function (socket) {
+				.createServer({allowHalfOpen: false}, function (socket) {
 					_this.handleNewClient(socket);
 				})
 				.listen(parseInt(port), function () {
@@ -455,12 +495,12 @@ var StratumServer = function (options, authorizeFn) {
 		socket.setKeepAlive(true);
 		var subscriptionId = subscriptionCounter.next();
 		var client = new StratumClient({
-			subscriptionId: subscriptionId,
-			authorizeFn: authorizeFn,
-			socket: socket,
-			banning: options.banning,
-			connectionTimeout: options.connectionTimeout,
-			tcpProxyProtocol: options.tcpProxyProtocol,
+			"subscriptionId": subscriptionId,
+			"authorizeFn": authorizeFn,
+			"socket": socket,
+			"banning": options.banning,
+			"connectionTimeout": options.connectionTimeout,
+			"tcpProxyProtocol": options.tcpProxyProtocol,
 		});
 		stratumClients[subscriptionId] = client;
 
@@ -522,9 +562,9 @@ var StratumServer = function (options, authorizeFn) {
 
 	// Initialize Stratum Connection
 	var connection = initializeServer();
+	//this.init = initializeServer;		// what will this do??
 };
 
 // Export Stratum Client/Server
-exports.server = StratumServer;
+//exports.server = StratumServer;
 StratumClient.prototype.__proto__ = events.EventEmitter.prototype;
-StratumServer.prototype.__proto__ = events.EventEmitter.prototype;

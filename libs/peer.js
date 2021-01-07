@@ -4,7 +4,7 @@
 var net = require("net");
 var crypto = require("crypto");
 var events = require("events");
-var util = require("./util.js");
+var Util = require("./util.js");
 
 // Generate String Buffer from Parameter Length
 var fixedLenStringBuffer = function (s, len) {
@@ -40,7 +40,7 @@ var readFlowingBytes = function (stream, amount, preRead, callback) {
 };
 
 // Peer Main Function
-var Peer = function (options) {
+var Peer = module.exports = function (options) {
 	// Establish Peer Variables
 	var _this = this;
 	var client;
@@ -59,7 +59,7 @@ var Peer = function (options) {
 	// Establish Network Variables
 	var networkServices = Buffer.from("0100000000000000", "hex"); //NODE_NETWORK services (value 1 packed as uint64)
 	var emptyNetAddress = Buffer.from("010000000000000000000000000000000000ffff000000000000", "hex");
-	var userAgent = util.varStringBuffer("/blazepool/");
+	var userAgent = Util.varStringBuffer("/blazepool/");
 	var blockStartHeight = Buffer.from("00000000", "hex"); //block start_height, can be empty
 	var relayTransactions = options.p2p.disableTransactions === true ? Buffer.from([false]) : Buffer.from([]);
 
@@ -95,15 +95,19 @@ var Peer = function (options) {
 				_this.emit("disconnected");
 				verack = false;
 				connectPeer();
-			} else if (validConnectionConfig) _this.emit("connectionRejected");
+			} else if (validConnectionConfig) {
+				_this.emit("connectionRejected");
+			}
 		});
 
 		// Manage Peer Error Functionality
-		client.on("error", function (e) {
-			if (e.code === "ECONNREFUSED") {
+		client.on("error", function (err) {
+			if (err.code === "ECONNREFUSED") {
 				validConnectionConfig = false;
 				_this.emit("connectionFailed");
-			} else _this.emit("socketError", e);
+			} else {
+				_this.emit("socketError", err);}
+
 		});
 
 		// Allow Peer to Receive/Send Messages
@@ -131,7 +135,7 @@ var Peer = function (options) {
 				var msgLength = header.readUInt32LE(16);
 				var msgChecksum = header.readUInt32LE(20);
 				readFlowingBytes(client, msgLength, lopped, function (payload, lopped) {
-					if (util.sha256d(payload).readUInt32LE(0) !== msgChecksum) {
+					if (Util.sha256d(payload).readUInt32LE(0) !== msgChecksum) {
 						_this.emit("error", "bad payload - failed checksum");
 						beginReadingMessage(null);
 						return;
@@ -191,7 +195,7 @@ var Peer = function (options) {
 
 	// Broadcast/Send Peer Messages
 	function sendMessage(command, payload) {
-		var message = Buffer.concat([magic, command, util.packUInt32LE(payload.length), util.sha256d(payload).slice(0, 4), payload]);
+		var message = Buffer.concat([magic, command, Util.packUInt32LE(payload.length), Util.sha256d(payload).slice(0, 4), payload]);
 		client.write(message);
 		_this.emit("sentMessage", message);
 	}
@@ -199,9 +203,9 @@ var Peer = function (options) {
 	// Broadcast/Send Peer Version
 	function sendVersion() {
 		var payload = Buffer.concat([
-			util.packUInt32LE(options.protocolVersion),
+			Util.packUInt32LE(options.protocolVersion),
 			networkServices,
-			util.packInt64LE((Date.now() / 1000) | 0),
+			Util.packInt64LE((Date.now() / 1000) | 0),
 			emptyNetAddress,
 			emptyNetAddress,
 			crypto.pseudoRandomBytes(8),
@@ -217,5 +221,5 @@ var Peer = function (options) {
 };
 
 // Export Peer
-module.exports = Peer;
+//module.exports = Peer;
 Peer.prototype.__proto__ = events.EventEmitter.prototype;

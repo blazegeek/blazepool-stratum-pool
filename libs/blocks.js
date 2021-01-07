@@ -2,14 +2,14 @@
 
 // Import Required Modules
 var bignum = require("bignum");
-var util = require("./util.js");
+var Util = require("./util.js");
 
 // Import Required Modules
 var Merkle = require("./merkle.js");
 var Transactions = require("./transactions.js");
 
 // BlockTemplate Main Function
-var BlockTemplate = function (jobId, rpcData, extraNoncePlaceholder, options) {
+var BlockTemplate = module.exports = function BlockTemplate(jobId, rpcData, extraNoncePlaceholder, options) {
 	// Current Block Headers Seen
 	var submits = [];
 
@@ -18,7 +18,7 @@ var BlockTemplate = function (jobId, rpcData, extraNoncePlaceholder, options) {
 	this.jobId = jobId;
 
 	// Calculate Block Target/Difficulty
-	this.target = rpcData.target ? bignum(rpcData.target, 16) : util.bignumFromBitsHex(rpcData.bits);
+	this.target = rpcData.target ? bignum(rpcData.target, 16) : Util.bignumFromBitsHex(rpcData.bits);
 	this.difficulty = parseFloat((diff1 / this.target.toNumber()).toFixed(9));
 
 	// Function to get Merkle Hashes
@@ -32,9 +32,9 @@ var BlockTemplate = function (jobId, rpcData, extraNoncePlaceholder, options) {
 	function getTransactionBuffers(txs) {
 		var txHashes = txs.map(function (tx) {
 			if (tx.txid !== undefined) {
-				return util.uint256BufferFromHash(tx.txid);
+				return Util.uint256BufferFromHash(tx.txid);
 			}
-			return util.uint256BufferFromHash(tx.hash);
+			return Util.uint256BufferFromHash(tx.hash);
 		});
 		return [null].concat(txHashes);
 	}
@@ -45,7 +45,7 @@ var BlockTemplate = function (jobId, rpcData, extraNoncePlaceholder, options) {
 			return Buffer.from([]);
 		}
 		return Buffer.concat(
-			[util.varIntBuffer(rpcData.votes.length)].concat(
+			[Util.varIntBuffer(rpcData.votes.length)].concat(
 				rpcData.votes.map(function (vt) {
 					return Buffer.from(vt, "hex");
 				})
@@ -92,9 +92,9 @@ var BlockTemplate = function (jobId, rpcData, extraNoncePlaceholder, options) {
 	);
 
 	// Structure Block Historical Hashes
-	this.prevHashReversed = util.reverseByteOrder(Buffer.from(rpcData.previousblockhash, "hex")).toString("hex");
+	this.prevHashReversed = Util.reverseByteOrder(Buffer.from(rpcData.previousblockhash, "hex")).toString("hex");
 	if (rpcData.finalsaplingroothash) {
-		this.hashReserved = util.reverseBuffer(new Buffer(rpcData.finalsaplingroothash, "hex")).toString("hex");
+		this.hashReserved = Util.reverseBuffer(new Buffer(rpcData.finalsaplingroothash, "hex")).toString("hex");
 	} else {
 		this.hashReserved = "0000000000000000000000000000000000000000000000000000000000000000";
 	}
@@ -125,8 +125,8 @@ var BlockTemplate = function (jobId, rpcData, extraNoncePlaceholder, options) {
 			case "equihash":
 				var header = Buffer.alloc(140);
 				var position = 0;
-				var merkleRootReversed = util.reverseBuffer(Buffer.from(merkleRoot, "hex")).toString("hex");
-				var bitsReversed = util.reverseBuffer(Buffer.from(this.rpcData.bits, "hex")).toString("hex");
+				var merkleRootReversed = Util.reverseBuffer(Buffer.from(merkleRoot, "hex")).toString("hex");
+				var bitsReversed = Util.reverseBuffer(Buffer.from(this.rpcData.bits, "hex")).toString("hex");
 				header.writeUInt32LE(this.rpcData.version, (position += 0), 4, "hex");
 				header.write(this.prevHashReversed, (position += 4), 32, "hex");
 				header.write(merkleRootReversed, (position += 32), 32, "hex");
@@ -145,7 +145,7 @@ var BlockTemplate = function (jobId, rpcData, extraNoncePlaceholder, options) {
 				header.write(merkleRoot, (position += 4), 32, "hex");
 				header.write(this.rpcData.previousblockhash, (position += 32), 32, "hex");
 				header.writeUInt32BE(this.rpcData.version, position + 32);
-				var header = util.reverseBuffer(header);
+				var header = Util.reverseBuffer(header);
 				return header;
 		}
 	};
@@ -165,7 +165,7 @@ var BlockTemplate = function (jobId, rpcData, extraNoncePlaceholder, options) {
 					if (txCount.length == 2) {
 						txCount = "00" + txCount;
 					}
-					var varInt = Buffer.concat([Buffer.from("FD", "hex"), util.reverseBuffer(Buffer.from(txCount, "hex"))]);
+					var varInt = Buffer.concat([Buffer.from("FD", "hex"), Util.reverseBuffer(Buffer.from(txCount, "hex"))]);
 				}
 				var buffer = Buffer.concat([header, soln, varInt, Buffer.from(this.generation[1], "hex"), this.transactions]);
 				return buffer;
@@ -174,7 +174,7 @@ var BlockTemplate = function (jobId, rpcData, extraNoncePlaceholder, options) {
 			default:
 				var buffer = Buffer.concat([
 					header,
-					util.varIntBuffer(this.rpcData.transactions.length + 1),
+					Util.varIntBuffer(this.rpcData.transactions.length + 1),
 					secondary,
 					this.transactions,
 					getVoteData(),
@@ -192,12 +192,12 @@ var BlockTemplate = function (jobId, rpcData, extraNoncePlaceholder, options) {
 				if (!this.jobParams) {
 					this.jobParams = [
 						this.jobId,
-						util.packUInt32LE(this.rpcData.version).toString("hex"),
+						Util.packUInt32LE(this.rpcData.version).toString("hex"),
 						this.prevHashReversed,
-						util.reverseBuffer(new Buffer(this.merkle, "hex")).toString("hex"),
+						Util.reverseBuffer(new Buffer(this.merkle, "hex")).toString("hex"),
 						this.hashReserved,
-						util.packUInt32LE(this.rpcData.curtime).toString("hex"),
-						util.reverseBuffer(new Buffer(this.rpcData.bits, "hex")).toString("hex"),
+						Util.packUInt32LE(this.rpcData.curtime).toString("hex"),
+						Util.reverseBuffer(new Buffer(this.rpcData.bits, "hex")).toString("hex"),
 						true,
 					];
 				}
@@ -212,9 +212,9 @@ var BlockTemplate = function (jobId, rpcData, extraNoncePlaceholder, options) {
 						this.generation[0][0].toString("hex"),
 						this.generation[0][1].toString("hex"),
 						getMerkleHashes(this.merkle.steps),
-						util.packInt32BE(this.rpcData.version).toString("hex"),
+						Util.packInt32BE(this.rpcData.version).toString("hex"),
 						this.rpcData.bits,
-						util.packUInt32BE(this.rpcData.curtime).toString("hex"),
+						Util.packUInt32BE(this.rpcData.curtime).toString("hex"),
 						true,
 					];
 				}
@@ -224,4 +224,4 @@ var BlockTemplate = function (jobId, rpcData, extraNoncePlaceholder, options) {
 };
 
 // Export BlockTemplate
-module.exports = BlockTemplate;
+//module.exports = BlockTemplate;

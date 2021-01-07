@@ -3,17 +3,17 @@
 // Import Required Modules
 var events = require("events");
 var async = require("async");
-var util = require("./util.js");
+var Util = require("./util.js");
 
 // Import Required Modules
-var Difficulty = require("./difficulty.js");
+var varDiff = require("./varDiff.js");
 var Daemon = require("./daemon.js");
 var Manager = require("./manager.js");
 var Peer = require("./peer.js");
 var Stratum = require("./stratum.js");
 
 // Pool Main Function
-var Pool = function (options, authorizeFn) {
+var Pool = module.exports = function Pool(options, authorizeFn) {
 	// Establish Pool Variables
 	var _this = this;
 	var lastBlockHex = "";
@@ -33,38 +33,14 @@ var Pool = function (options, authorizeFn) {
 
 	// Check if Algorithm is Supported
 	this.options = options;
-	if (!(options.coin.algorithm in algorithms)) {
+	if (!(options.coin.algorithm in Algorithms)) {
 		emitErrorLog("The " + options.coin.algorithm + " hashing algorithm is not supported.");
 		throw new Error();
 	}
 
-	// Process Block when Found
-	this.processBlockNotify = function (blockHash, sourceTrigger) {
-		emitLog("Block notification via " + sourceTrigger);
-		if (typeof _this.manager.currentJob !== "undefined" && blockHash !== _this.manager.currentJob.rpcData.previousblockhash) {
-			getBlockTemplate(function (error, result) {
-				if (error) {
-					emitErrorLog("Block notify error getting block template for " + options.coin.name);
-				}
-			});
-		}
-	};
-
-	// Configure Port Difficulty
-	this.setDifficulty = function (port, difficultyConfig) {
-		if (typeof _this.difficulty[port] != "undefined") {
-			_this.difficulty[port].removeAllListeners();
-		}
-		var difficultyInstance = new Difficulty(port, difficultyConfig);
-		_this.difficulty[port] = difficultyInstance;
-		_this.difficulty[port].on("newDifficulty", function (client, newDiff) {
-			client.enqueueNextDifficulty(newDiff);
-		});
-	};
-
 	// Initialize Pool Server
 	this.start = function () {
-		setupDifficulty();
+		setupVarDiff();
 		setupDaemonInterface(function () {
 			setupPoolData(function () {
 				setupRecipients();
@@ -83,11 +59,25 @@ var Pool = function (options, authorizeFn) {
 		});
 	};
 
+	// Process Block when Found
+	this.processBlockNotify = function (blockHash, sourceTrigger) {
+		emitLog("Block notification via " + sourceTrigger);
+		if (typeof _this.manager.currentJob !== "undefined" && blockHash !== _this.manager.currentJob.rpcData.previousblockhash) {
+			getBlockTemplate(function (error, result) {
+				if (error) {
+					emitErrorLog("Block notify error getting block template for " + options.coin.name);
+				}
+			});
+		}
+	};
+
 	// Initialize Pool Difficulty
-	function setupDifficulty() {
-		_this.difficulty = {};
+	function setupVarDiff() {
+		_this.varDiff = {};
 		Object.keys(options.ports).forEach(function (port) {
-			if (options.ports[port].difficulty) _this.setDifficulty(port, options.ports[port].difficulty);
+			if (options.ports[port].varDiff) {
+				_this.setVarDiff(port, options.ports[port].varDiff);
+			}
 		});
 	}
 
@@ -541,8 +531,8 @@ var Pool = function (options, authorizeFn) {
 		// Establish New Connection Functionality
 		_this.stratumServer.on("client.connected", function (client) {
 			// Manage/Record Client Difficulty
-			if (typeof _this.difficulty[client.socket.localPort] !== "undefined") {
-				_this.difficulty[client.socket.localPort].manageClient(client);
+			if (typeof _this.varDiff[client.socket.localPort] !== "undefined") {
+				_this.varDiff[client.socket.localPort].manageClient(client);
 			}
 
 			// Establish Client Difficulty Functionality
@@ -691,5 +681,17 @@ var Pool = function (options, authorizeFn) {
 	}
 };
 
-module.exports = Pool;
+	// Configure Port Difficulty
+	this.setVarDiff = function (port, varDiffConfig) {
+		if (typeof _this.varDiff[port] != "undefined") {
+			_this.varDiff[port].removeAllListeners();
+		}
+		var varDiffInstance = new varDiff(port, varDiffConfig);
+		_this.varDiff[port] = varDiffInstance;
+		_this.varDiff[port].on("newDifficulty", function (client, newDiff) {
+			client.enqueueNextDifficulty(newDiff);
+		});
+	};
+
+//module.exports = Pool;
 Pool.prototype.__proto__ = events.EventEmitter.prototype;

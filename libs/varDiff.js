@@ -52,14 +52,14 @@ function RingBuffer(maxSize) {
 }
 
 // Difficulty Main Function
-var Difficulty = function (port, difficultyOptions) {
+var varDiff = module.exports = function varDiff(port, varDiffOptions) {
 	// Establish Difficulty Variables
 	var _this = this;
 	var bufferSize, tMin, tMax;
-	var variance = difficultyOptions.targetTime * (difficultyOptions.variancePercent / 100);
-	bufferSize = (difficultyOptions.retargetTime / difficultyOptions.targetTime) * 4;
-	tMin = difficultyOptions.targetTime - variance;
-	tMax = difficultyOptions.targetTime + variance;
+	var variance = varDiffOptions.targetTime * (varDiffOptions.variancePercent / 100);
+	bufferSize = (varDiffOptions.retargetTime / varDiffOptions.targetTime) * 4;
+	tMin = varDiffOptions.targetTime - variance;
+	tMax = varDiffOptions.targetTime + variance;
 
 	// Manage Individual Clients
 	this.manageClient = function (client) {
@@ -70,7 +70,7 @@ var Difficulty = function (port, difficultyOptions) {
 		}
 
 		// Establish Client Variables
-		var options = difficultyOptions;
+		var options = varDiffOptions;
 		var lastTs;
 		var lastRtc;
 		var timeBuffer;
@@ -119,5 +119,5 @@ var Difficulty = function (port, difficultyOptions) {
 };
 
 // Export Difficulty
-module.exports = Difficulty;
-Difficulty.prototype.__proto__ = events.EventEmitter.prototype;
+//module.exports = Difficulty;
+varDiff.prototype.__proto__ = events.EventEmitter.prototype;

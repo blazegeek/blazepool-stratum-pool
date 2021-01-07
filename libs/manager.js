@@ -4,7 +4,7 @@
 var events = require("events");
 var crypto = require("crypto");
 var bignum = require("bignum");
-var util = require("./util.js");
+var Util = require("./util.js");
 
 // Import BlockTemplate Module
 var BlockTemplate = require("./blocks.js");
@@ -15,7 +15,7 @@ var ExtraNonceCounter = function (configInstanceId) {
 	var counter = instanceId << 27;
 	this.size = 4;
 	this.next = function () {
-		var extraNonce = util.packUInt32BE(Math.abs(counter++));
+		var extraNonce = Util.packUInt32BE(Math.abs(counter++));
 		return extraNonce.toString("hex");
 	};
 };
@@ -36,20 +36,20 @@ var JobCounter = function () {
 // Map Equihash Solution Parameters
 const equihashParameters = {
 	"125_4": {
-		solutionLength: 106,
-		solutionSlice: 2,
+		"solutionLength": 106,
+		"solutionSlice": 2,
 	},
 	"144_5": {
-		solutionLength: 202,
-		solutionSlice: 2,
+		"solutionLength": 202,
+		"solutionSlice": 2,
 	},
 	"192_7": {
-		solutionLength: 806,
-		solutionSlice: 6,
+		"solutionLength": 806,
+		"solutionSlice": 6,
 	},
 	"200_9": {
-		solutionLength: 2694,
-		solutionSlice: 6,
+		"solutionLength": 2694,
+		"solutionSlice": 6,
 	},
 };
 
@@ -86,12 +86,12 @@ function isHex(c) {
  **/
 
 // Manager Main Function
-var Manager = function (options) {
+var Manager = (module.exports = function Manager(options) {
 	// Establish Private Manager Variables
 	var _this = this;
 	var jobCounter = new JobCounter();
-	var shareMultiplier = algorithms[options.coin.algorithm].multiplier;
-	var hashDigest = algorithms[options.coin.algorithm].hash(options.coin);
+	var shareMultiplier = Algorithms[options.coin.algorithm].multiplier;
+	var hashDigest = Algorithms[options.coin.algorithm].hash(options.coin);
 
 	// Establish Public Manager Variables
 	this.currentJob;
@@ -105,11 +105,11 @@ var Manager = function (options) {
 		switch (options.coin.algorithm) {
 			case "x11":
 				return function () {
-					return util.reverseBuffer(hashDigest.apply(this, arguments));
+					return Util.reverseBuffer(hashDigest.apply(this, arguments));
 				};
 			default:
 				return function (d) {
-					return util.reverseBuffer(util.sha256d(d));
+					return Util.reverseBuffer(Util.sha256d(d));
 				};
 		}
 	}
@@ -118,7 +118,7 @@ var Manager = function (options) {
 	function coinbaseHash() {
 		switch (options.coin.algorithm) {
 			default:
-				return util.sha256d;
+				return Util.sha256d;
 		}
 	}
 
@@ -162,20 +162,23 @@ var Manager = function (options) {
 		// Share is Invalid
 		var shareError = function (error) {
 			_this.emit("share", {
-				job: jobId,
-				ip: ipAddress,
-				worker: workerName,
-				difficulty: difficulty,
-				port: port,
-				error: error[1],
+				"job": jobId,
+				"ip": ipAddress,
+				"worker": workerName,
+				"difficulty": difficulty,
+				"port": port,
+				"error": error[1],
 			});
-			return { error: error, result: null };
+			return {
+				"error": error,
+				"result": null,
+			};
 		};
 
 		// Handle Shares by Algorithm
 		switch (options.coin.algorithm) {
 			// Equihash Share Handling
-			case "equihash":
+			case "equihash": {
 				// Calculate Coin Parameters
 				var N = options.coin.parameters.N || 200;
 				var K = options.coin.parameters.K || 9;
@@ -191,7 +194,7 @@ var Manager = function (options) {
 				if (nTime.length !== 8) {
 					return shareError([20, "incorrect size of ntime"]);
 				}
-				var nTimeInt = parseInt(util.reverseBuffer(new Buffer(nTime, "hex")), 16);
+				var nTimeInt = parseInt(Util.reverseBuffer(new Buffer(nTime, "hex")), 16);
 				if (nTimeInt < job.rpcData.curtime || nTimeInt > submitTime + 7200) {
 					return shareError([20, "ntime out of range"]);
 				}
@@ -211,8 +214,8 @@ var Manager = function (options) {
 				// Start Generating Block Hash
 				var headerBuffer = job.serializeHeader(job.merkle, nTime, nonce, options);
 				var headerSolnBuffer = new Buffer.concat([headerBuffer, new Buffer(soln, "hex")]);
-				var headerHash = util.sha256d(headerSolnBuffer);
-				var headerBigNum = bignum.fromBuffer(headerHash, { endian: "little", size: 32 });
+				var headerHash = Util.sha256d(headerSolnBuffer);
+				var headerBigNum = bignum.fromBuffer(headerHash, {endian: "little", size: 32});
 
 				// Establish Share Variables
 				var blockHashInvalid;
@@ -231,10 +234,10 @@ var Manager = function (options) {
 				// Check if Share is Valid Block Candidate
 				if (headerBigNum.le(job.target)) {
 					blockHex = job.serializeBlock(headerBuffer, new Buffer(soln, "hex")).toString("hex");
-					blockHash = util.reverseBuffer(headerHash).toString("hex");
+					blockHash = Util.reverseBuffer(headerHash).toString("hex");
 				} else {
 					if (options.emitInvalidBlockHashes) {
-						blockHashInvalid = util.reverseBuffer(util.sha256d(headerSolnBuffer)).toString("hex");
+						blockHashInvalid = Util.reverseBuffer(Util.sha256d(headerSolnBuffer)).toString("hex");
 					}
 					if (shareDiff / difficulty < 0.99) {
 						if (previousDifficulty && shareDiff >= previousDifficulty) {
@@ -249,27 +252,31 @@ var Manager = function (options) {
 				_this.emit(
 					"share",
 					{
-						job: jobId,
-						ip: ipAddress,
-						port: port,
-						worker: workerName,
-						height: job.rpcData.height,
-						blockReward: job.rpcData.reward,
-						difficulty: difficulty,
-						shareDiff: shareDiff.toFixed(8),
-						blockDiff: blockDiffAdjusted,
-						blockDiffActual: job.difficulty,
-						blockHash: blockHash,
-						blockHashInvalid: blockHashInvalid,
+						"job": jobId,
+						"ip": ipAddress,
+						"port": port,
+						"worker": workerName,
+						"height": job.rpcData.height,
+						"blockReward": job.rpcData.reward,
+						"difficulty": difficulty,
+						"shareDiff": shareDiff.toFixed(8),
+						"blockDiff": blockDiffAdjusted,
+						"blockDiffActual": job.difficulty,
+						"blockHash": blockHash,
+						"blockHashInvalid": blockHashInvalid,
 					},
 					blockHex
 				);
 
 				// Return Valid Share
-				return { result: true, error: null, blockHash: blockHash };
-
+				return {
+					"result": true,
+					"error": null,
+					"blockHash": blockHash,
+				};
+			}
 			// Default Share Handling
-			default:
+			default: {
 				// Edge Cases to Check if Share is Invalid
 				var submitTime = (Date.now() / 1000) | 0;
 				if (extraNonce2.length / 2 !== _this.extraNonce2Size);
@@ -297,10 +304,10 @@ var Manager = function (options) {
 				var extraNonce2Buffer = Buffer.from(extraNonce2, "hex");
 				var coinbaseBuffer = job.serializeCoinbase(extraNonce1Buffer, extraNonce2Buffer, options);
 				var coinbaseHash = coinbaseHasher(coinbaseBuffer);
-				var merkleRoot = util.reverseBuffer(job.merkle.withFirst(coinbaseHash)).toString("hex");
+				var merkleRoot = Util.reverseBuffer(job.merkle.withFirst(coinbaseHash)).toString("hex");
 				var headerBuffer = job.serializeHeader(merkleRoot, nTime, nonce, options);
 				var headerHash = hashDigest(headerBuffer, nTimeInt);
-				var headerBigNum = bignum.fromBuffer(headerHash, { endian: "little", size: 32 });
+				var headerBigNum = bignum.fromBuffer(headerHash, {endian: "little", size: 32});
 
 				// Establish Share Variables
 				var blockHashInvalid;
@@ -317,7 +324,7 @@ var Manager = function (options) {
 					blockHash = blockHasher(headerBuffer, nTime).toString("hex");
 				} else {
 					if (options.emitInvalidBlockHashes) {
-						blockHashInvalid = util.reverseBuffer(util.sha256d(headerBuffer)).toString("hex");
+						blockHashInvalid = Util.reverseBuffer(Util.sha256d(headerBuffer)).toString("hex");
 					}
 					if (shareDiff / difficulty < 0.99) {
 						if (previousDifficulty && shareDiff >= previousDifficulty) {
@@ -332,28 +339,33 @@ var Manager = function (options) {
 				_this.emit(
 					"share",
 					{
-						job: jobId,
-						ip: ipAddress,
-						port: port,
-						worker: workerName,
-						height: job.rpcData.height,
-						blockReward: job.rpcData.coinbasevalue,
-						difficulty: difficulty,
-						shareDiff: shareDiff.toFixed(8),
-						blockDiff: blockDiffAdjusted,
-						blockDiffActual: job.difficulty,
-						blockHash: blockHash,
-						blockHashInvalid: blockHashInvalid,
+						"job": jobId,
+						"ip": ipAddress,
+						"port": port,
+						"worker": workerName,
+						"height": job.rpcData.height,
+						"blockReward": job.rpcData.coinbasevalue,
+						"difficulty": difficulty,
+						"shareDiff": shareDiff.toFixed(8),
+						"blockDiff": blockDiffAdjusted,
+						"blockDiffActual": job.difficulty,
+						"blockHash": blockHash,
+						"blockHashInvalid": blockHashInvalid,
 					},
 					blockHex
 				);
 
 				// Return Valid Share
-				return { result: true, error: null, blockHash: blockHash };
+				return {
+					"result": true,
+					"error": null,
+					"blockHash": blockHash,
+				};
+			}
 		}
 	};
-};
+});
 
 // Export Manager
-module.exports = Manager;
+//module.exports = Manager;
 Manager.prototype.__proto__ = events.EventEmitter.prototype;

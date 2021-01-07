@@ -2,15 +2,15 @@
 
 // Import Required Modules
 var bitcoin = require("blazepool-utxo-lib");
-var util = require("./util.js");
+var Util = require("./util.js");
 
 // Generate Combined Transactions (Bitcoin)
-var Transactions = function () {
+var Transactions = module.exports = function Transactions() {
 	// Convert Address to Usable Script
 	function compileScript(address, network) {
-		var outputScript = util.addressToScript(network, address);
+		var outputScript = Util.addressToScript(network, address);
 		if (address.length === 40) {
-			outputScript = util.miningKeyToScript(address);
+			outputScript = Util.miningKeyToScript(address);
 		}
 		return outputScript;
 	}
@@ -26,7 +26,7 @@ var Transactions = function () {
 		var reward = rpcData[options.coin.rewardType];
 		var rewardToPool = reward;
 		var poolIdentifier = options.identifier || "blazepool.blazegeek.com";
-		var poolAddressScript = util.addressToScript(options.network, options.poolAddress);
+		var poolAddressScript = Util.addressToScript(options.network, options.poolAddress);
 
 		// Set Transaction Version
 		if (options.coin.sapling === true || (typeof options.coin.sapling === "number" && options.coin.sapling <= rpcData.height)) {
@@ -47,7 +47,7 @@ var Transactions = function () {
 		let length = `0${height}`;
 		let serializedBlockHeight = new Buffer.concat([
 			new Buffer(length, "hex"),
-			util.reverseBuffer(new Buffer(blockHeightSerial, "hex")),
+			Util.reverseBuffer(new Buffer(blockHeightSerial, "hex")),
 			new Buffer("00", "hex"),
 		]);
 
@@ -183,7 +183,7 @@ var Transactions = function () {
 		var txOutputBuffers = [];
 		var txVersion = options.coin.txMessages === true ? 2 : 1;
 		if (rpcData.coinbasetxn && rpcData.coinbasetxn.data) {
-			txVersion = parseInt(util.reverseHex(rpcData.coinbasetxn.data.slice(0, 8)), 16);
+			txVersion = parseInt(Util.reverseHex(rpcData.coinbasetxn.data.slice(0, 8)), 16);
 		}
 
 		// Support Coinbase v3 Block Template
@@ -200,30 +200,30 @@ var Transactions = function () {
 		var reward = rpcData[options.coin.rewardType];
 		var rewardToPool = reward;
 		var poolIdentifier = options.identifier || "blazepool.blazegeek.com";
-		var poolAddressScript = util.addressToScript(options.network, options.poolAddress);
+		var poolAddressScript = Util.addressToScript(options.network, options.poolAddress);
 		var coinbaseAux = rpcData.coinbaseaux.flags ? Buffer.from(rpcData.coinbaseaux.flags, "hex") : Buffer.from([]);
 
 		// Handle Comments if Necessary
-		var txComment = options.coin.txMessages === true ? util.serializeString(poolIdentifier) : Buffer.from([]);
+		var txComment = options.coin.txMessages === true ? Util.serializeString(poolIdentifier) : Buffer.from([]);
 
 		// Handle ScriptSig [1]
 		var scriptSigPart1 = Buffer.concat([
-			util.serializeNumber(rpcData.height),
+			Util.serializeNumber(rpcData.height),
 			coinbaseAux,
-			util.serializeNumber((Date.now() / 1000) | 0),
+			Util.serializeNumber((Date.now() / 1000) | 0),
 			Buffer.from([extraNoncePlaceholder.length]),
 		]);
 
 		// Handle ScriptSig [2]
-		var scriptSigPart2 = util.serializeString(poolIdentifier);
+		var scriptSigPart2 = Util.serializeString(poolIdentifier);
 
 		// Combine Transaction [1]
 		var p1 = Buffer.concat([
-			util.packUInt32LE(txVersion),
-			util.varIntBuffer(1),
-			util.uint256BufferFromHash(txInPrevOutHash),
-			util.packUInt32LE(txInPrevOutIndex),
-			util.varIntBuffer(scriptSigPart1.length + extraNoncePlaceholder.length + scriptSigPart2.length),
+			Util.packUInt32LE(txVersion),
+			Util.varIntBuffer(1),
+			Util.uint256BufferFromHash(txInPrevOutHash),
+			Util.packUInt32LE(txInPrevOutIndex),
+			Util.varIntBuffer(scriptSigPart1.length + extraNoncePlaceholder.length + scriptSigPart2.length),
 			scriptSigPart1,
 		]);
 
@@ -234,7 +234,7 @@ var Transactions = function () {
 				var payeeScript = compileScript(rpcData.masternode.payee, options.network);
 				reward -= payeeReward;
 				rewardToPool -= payeeReward;
-				txOutputBuffers.push(Buffer.concat([util.packInt64LE(payeeReward), util.varIntBuffer(payeeScript.length), payeeScript]));
+				txOutputBuffers.push(Buffer.concat([Util.packInt64LE(payeeReward), Util.varIntBuffer(payeeScript.length), payeeScript]));
 			} else if (rpcData.masternode.length > 0) {
 				for (var i in rpcData.masternode) {
 					var payeeReward = rpcData.masternode[i].amount;
@@ -246,7 +246,7 @@ var Transactions = function () {
 					}
 					reward -= payeeReward;
 					rewardToPool -= payeeReward;
-					txOutputBuffers.push(Buffer.concat([util.packInt64LE(payeeReward), util.varIntBuffer(payeeScript.length), payeeScript]));
+					txOutputBuffers.push(Buffer.concat([Util.packInt64LE(payeeReward), Util.varIntBuffer(payeeScript.length), payeeScript]));
 				}
 			}
 		}
@@ -263,7 +263,7 @@ var Transactions = function () {
 				}
 				reward -= payeeReward;
 				rewardToPool -= payeeReward;
-				txOutputBuffers.push(Buffer.concat([util.packInt64LE(payeeReward), util.varIntBuffer(payeeScript.length), payeeScript]));
+				txOutputBuffers.push(Buffer.concat([Util.packInt64LE(payeeReward), Util.varIntBuffer(payeeScript.length), payeeScript]));
 			}
 		}
 
@@ -273,7 +273,7 @@ var Transactions = function () {
 			var payeeScript = compileScript(rpcData.payee, options.network);
 			reward -= payeeReward;
 			rewardToPool -= payeeReward;
-			txOutputBuffers.push(Buffer.concat([util.packInt64LE(payeeReward), util.varIntBuffer(payeeScript.length), payeeScript]));
+			txOutputBuffers.push(Buffer.concat([Util.packInt64LE(payeeReward), Util.varIntBuffer(payeeScript.length), payeeScript]));
 		}
 
 		// Handle Pool/Secondary Transactions
@@ -289,27 +289,27 @@ var Transactions = function () {
 			var recipientScript = compileScript(options.recipients[i].address, options.network);
 			reward -= payeeReward;
 			rewardToPool -= recipientReward;
-			txOutputBuffers.push(Buffer.concat([util.packInt64LE(recipientReward), util.varIntBuffer(recipientScript.length), recipientScript]));
+			txOutputBuffers.push(Buffer.concat([Util.packInt64LE(recipientReward), Util.varIntBuffer(recipientScript.length), recipientScript]));
 		}
 
 		// Handle Pool Transaction
-		txOutputBuffers.unshift(Buffer.concat([util.packInt64LE(rewardToPool), util.varIntBuffer(poolAddressScript.length), poolAddressScript]));
+		txOutputBuffers.unshift(Buffer.concat([Util.packInt64LE(rewardToPool), Util.varIntBuffer(poolAddressScript.length), poolAddressScript]));
 
 		// Handle Witness Commitment
 		if (rpcData.default_witness_commitment !== undefined) {
 			witness_commitment = Buffer.from(rpcData.default_witness_commitment, "hex");
-			txOutputBuffers.unshift(Buffer.concat([util.packInt64LE(0), util.varIntBuffer(witness_commitment.length), witness_commitment]));
+			txOutputBuffers.unshift(Buffer.concat([Util.packInt64LE(0), Util.varIntBuffer(witness_commitment.length), witness_commitment]));
 		}
 
 		// Combine All Transactions
-		var outputTransactions = Buffer.concat([util.varIntBuffer(txOutputBuffers.length), Buffer.concat(txOutputBuffers)]);
+		var outputTransactions = Buffer.concat([Util.varIntBuffer(txOutputBuffers.length), Buffer.concat(txOutputBuffers)]);
 
 		// Combine Transaction [2]
-		var p2 = Buffer.concat([scriptSigPart2, util.packUInt32LE(txInSequence), outputTransactions, util.packUInt32LE(txLockTime), txComment]);
+		var p2 = Buffer.concat([scriptSigPart2, Util.packUInt32LE(txInSequence), outputTransactions, Util.packUInt32LE(txLockTime), txComment]);
 
 		// Check for Extra Transaction Payload
 		if (txExtraPayload !== undefined) {
-			var p2 = Buffer.concat([p2, util.varIntBuffer(txExtraPayload.length), txExtraPayload]);
+			var p2 = Buffer.concat([p2, Util.varIntBuffer(txExtraPayload.length), txExtraPayload]);
 		}
 
 		// Return Generated Transaction
@@ -318,4 +318,4 @@ var Transactions = function () {
 };
 
 // Export Transactions
-module.exports = Transactions;
+//module.exports = Transactions;
